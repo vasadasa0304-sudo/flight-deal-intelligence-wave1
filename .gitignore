@@ -13,7 +13,8 @@ venv/
 secrets/
 
 # Data outputs
-data/exports/
+data/exports/*
+!data/exports/.gitkeep
 *.sqlite
 *.db
 
