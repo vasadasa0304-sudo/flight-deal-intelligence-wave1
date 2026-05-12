@@ -1,0 +1,5 @@
+-- Price trend for a route
+-- SELECT fetched_at::date, MIN(price), AVG(price), MAX(price)
+-- FROM fare_snapshots
+-- WHERE origin = 'LHR' AND destination = 'JFK'
+-- GROUP BY 1 ORDER BY 1;

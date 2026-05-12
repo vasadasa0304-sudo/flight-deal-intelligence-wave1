@@ -1,0 +1,7 @@
+requests
+python-dotenv
+pyyaml
+sqlalchemy
+psycopg2-binary
+pandas
+streamlit>=1.32.0
