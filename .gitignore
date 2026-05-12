@@ -31,3 +31,6 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Windows alternate data streams
+*:Zone.Identifier
