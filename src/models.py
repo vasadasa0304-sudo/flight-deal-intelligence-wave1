@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -19,6 +19,10 @@ class WatchlistRoute(Base):
 
     __tablename__ = "watchlist_routes"
     __table_args__ = (
+        CheckConstraint(
+            "not is_active or cabin in ('ECONOMY', 'BUSINESS')",
+            name="ck_active_wave1_watchlist_mvp_cabins",
+        ),
         UniqueConstraint(
             "origin",
             "destination",

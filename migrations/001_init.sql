@@ -8,6 +8,8 @@ create table if not exists watchlist_routes (
     is_active boolean not null default true,
     source_document varchar(255) not null,
     created_at timestamptz not null default now(),
+    constraint ck_active_wave1_watchlist_mvp_cabins
+        check (not is_active or cabin in ('ECONOMY', 'BUSINESS')),
     constraint uq_watchlist_route_grain unique (
         origin,
         destination,

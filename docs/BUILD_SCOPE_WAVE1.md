@@ -73,7 +73,12 @@ MVP cabins are limited to:
 - `ECONOMY`
 - `BUSINESS`
 
-Other cabins are out of scope for Wave1 unless separately approved.
+The schema cabin vocabulary must also support Phase 2 values:
+
+- `PREMIUM_ECONOMY`
+- `FIRST`
+
+For Wave1, the `ECONOMY` / `BUSINESS` limit is a row-level rule on active Wave1 watchlist rows. It must not be implemented as a column-level cabin constraint that prevents storing future Phase 2 cabin values.
 
 ## Core Logic
 
@@ -139,6 +144,7 @@ Facts:
 - The active route target is 60-80 routes selected from the Wave1 route file.
 - The MVP booking windows are 14 days and 60 days.
 - The MVP cabins are `ECONOMY` and `BUSINESS`.
+- The schema supports `PREMIUM_ECONOMY` and `FIRST` for Phase 2.
 - Fare observations must be append-only.
 - Alert export requires QA verification.
 

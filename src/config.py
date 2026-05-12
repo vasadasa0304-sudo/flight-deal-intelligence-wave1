@@ -9,7 +9,8 @@ from dataclasses import dataclass
 WAVE1_HUBS = ("IST", "SAW", "DXB", "AUH", "RUH", "JED", "DOH", "CAI")
 WAVE1_AIRLINES = ("TK", "PC", "EK", "FZ", "QR", "EY", "SV", "XY", "MS", "G9")
 WAVE1_BOOKING_WINDOWS_DAYS = (14, 60)
-WAVE1_CABINS = ("ECONOMY", "BUSINESS")
+SUPPORTED_CABINS = ("ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST")
+WAVE1_MVP_CABINS = ("ECONOMY", "BUSINESS")
 
 
 def _csv_env(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
@@ -36,7 +37,7 @@ class Settings:
     wave1_hubs: tuple[str, ...]
     wave1_airlines: tuple[str, ...]
     wave1_booking_windows_days: tuple[int, ...]
-    wave1_cabins: tuple[str, ...]
+    wave1_mvp_cabins: tuple[str, ...]
     amadeus_env: str
     amadeus_client_id: str | None
     amadeus_client_secret: str | None
@@ -50,7 +51,7 @@ class Settings:
             raise ValueError("Configured hubs include values outside Wave1.")
         if set(self.wave1_airlines) - set(WAVE1_AIRLINES):
             raise ValueError("Configured airlines include values outside Wave1.")
-        if set(self.wave1_cabins) - set(WAVE1_CABINS):
+        if set(self.wave1_mvp_cabins) - set(WAVE1_MVP_CABINS):
             raise ValueError("Configured cabins include values outside Wave1.")
 
 
@@ -71,7 +72,7 @@ def load_settings() -> Settings:
             "WAVE1_BOOKING_WINDOWS_DAYS",
             WAVE1_BOOKING_WINDOWS_DAYS,
         ),
-        wave1_cabins=_csv_env("WAVE1_CABINS", WAVE1_CABINS),
+        wave1_mvp_cabins=_csv_env("WAVE1_MVP_CABINS", WAVE1_MVP_CABINS),
         amadeus_env=os.getenv("AMADEUS_ENV", "test"),
         amadeus_client_id=os.getenv("AMADEUS_CLIENT_ID") or None,
         amadeus_client_secret=os.getenv("AMADEUS_CLIENT_SECRET") or None,
@@ -79,4 +80,3 @@ def load_settings() -> Settings:
     )
     settings.validate_wave1()
     return settings
-

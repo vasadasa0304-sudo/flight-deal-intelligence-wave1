@@ -19,6 +19,8 @@ Wave1 only:
 - Route source: selected only from `docs/Wave1_Airlines_Routes_v1.docx`.
 - Booking windows: 14 days and 60 days.
 - MVP cabins: `ECONOMY` and `BUSINESS`.
+- Schema cabin vocabulary: `ECONOMY`, `PREMIUM_ECONOMY`, `BUSINESS`, `FIRST`.
+- Active Wave1 watchlist rows are limited to `ECONOMY` and `BUSINESS` by row-level rule.
 - Core model: append-only fare observations, 30-day rolling median baseline, Deal / Flash Deal / Phantom Fare classification.
 - Operations gate: QA verification before alert export.
 

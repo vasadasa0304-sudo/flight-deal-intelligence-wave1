@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.config import WAVE1_AIRLINES, WAVE1_CABINS, WAVE1_HUBS
+from src.config import WAVE1_AIRLINES, WAVE1_HUBS, WAVE1_MVP_CABINS
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +35,15 @@ def load_watchlist_csv(path: Path) -> pd.DataFrame:
 def _validate_wave1_frame(frame: pd.DataFrame) -> None:
     invalid_origins = set(frame["origin"]) - set(WAVE1_HUBS)
     invalid_carriers = set(frame["marketing_carrier"]) - set(WAVE1_AIRLINES)
-    invalid_cabins = set(frame["cabin"]) - set(WAVE1_CABINS)
+    active_mask = (
+        frame["is_active"].fillna(True)
+        if "is_active" in frame.columns
+        else pd.Series(True, index=frame.index)
+    )
+    invalid_cabins = set(frame.loc[active_mask, "cabin"]) - set(WAVE1_MVP_CABINS)
     if invalid_origins:
         raise ValueError(f"Origins outside Wave1 hubs: {sorted(invalid_origins)}")
     if invalid_carriers:
         raise ValueError(f"Carriers outside Wave1 airlines: {sorted(invalid_carriers)}")
     if invalid_cabins:
-        raise ValueError(f"Cabins outside Wave1 MVP cabins: {sorted(invalid_cabins)}")
-
+        raise ValueError(f"Active Wave1 rows outside MVP cabins: {sorted(invalid_cabins)}")
