@@ -19,12 +19,24 @@ def get_engine(settings: Settings) -> Engine:
 
 
 def run_migrations(engine: Engine, sql_path: Path) -> None:
-    """Execute the SQL migration file against a fresh PostgreSQL database."""
-    sql = sql_path.read_text(encoding="utf-8")
-    statements = _split_sql_statements(sql)
-    with engine.begin() as connection:
-        for statement in statements:
-            connection.exec_driver_sql(statement)
+    """Execute SQL migration(s) against a PostgreSQL database.
+
+    Accepts either:
+    - A single .sql file: runs that file.
+    - A directory: sorts all *.sql files inside and runs them in order.
+      This means 001_init.sql always runs before 002_grain_constraints.sql.
+    """
+    if sql_path.is_dir():
+        paths = sorted(sql_path.glob("*.sql"))
+    else:
+        paths = [sql_path]
+
+    for path in paths:
+        sql = path.read_text(encoding="utf-8")
+        statements = _split_sql_statements(sql)
+        with engine.begin() as connection:
+            for statement in statements:
+                connection.exec_driver_sql(statement)
 
 
 @contextmanager
@@ -42,7 +54,11 @@ def session_scope(session_factory: sessionmaker[Session]) -> Iterator[Session]:
 
 
 def _split_sql_statements(sql: str) -> list[str]:
-    """Split a plain SQL migration file on statement-ending semicolons."""
+    """Split a plain SQL migration file on statement-ending semicolons.
+
+    Respects single-quoted and double-quoted strings so semicolons inside
+    string literals are not treated as statement boundaries.
+    """
     statements: list[str] = []
     current: list[str] = []
     in_single_quote = False

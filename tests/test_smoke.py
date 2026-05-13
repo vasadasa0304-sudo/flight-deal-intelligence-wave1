@@ -31,9 +31,10 @@ def test_watchlist_loader_allows_phase2_cabins_only_when_inactive(tmp_path: Path
     """Active Wave1 rows are MVP cabin only; inactive future rows can use Phase 2 cabins."""
     seed_path = tmp_path / "watchlist.csv"
     seed_path.write_text(
-        "origin,destination,marketing_carrier,cabin,booking_window_days,is_active\n"
-        "IST,DXB,TK,ECONOMY,14,true\n"
-        "IST,DXB,TK,FIRST,60,false\n",
+        "route_id,airline_code,cabin,booking_window_days,currency,"
+        "poll_frequency_minutes,route_priority,strategic_tag,is_active\n"
+        "IST-DXB,TK,ECONOMY,14,USD,360,TIER_1_DAILY,STANDARD,true\n"
+        "IST-DXB,TK,FIRST,60,USD,360,TIER_1_DAILY,STANDARD,false\n",
         encoding="utf-8",
     )
 
@@ -46,8 +47,9 @@ def test_watchlist_loader_rejects_active_phase2_cabins(tmp_path: Path) -> None:
     """Active Wave1 rows cannot use Phase 2 cabin values."""
     seed_path = tmp_path / "watchlist.csv"
     seed_path.write_text(
-        "origin,destination,marketing_carrier,cabin,booking_window_days,is_active\n"
-        "IST,DXB,TK,FIRST,14,true\n",
+        "route_id,airline_code,cabin,booking_window_days,currency,"
+        "poll_frequency_minutes,route_priority,strategic_tag,is_active\n"
+        "IST-DXB,TK,FIRST,14,USD,360,TIER_1_DAILY,STANDARD,true\n",
         encoding="utf-8",
     )
 
