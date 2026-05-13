@@ -54,29 +54,145 @@ def session_scope(session_factory: sessionmaker[Session]) -> Iterator[Session]:
 
 
 def _split_sql_statements(sql: str) -> list[str]:
-    """Split a plain SQL migration file on statement-ending semicolons.
+    """Split a SQL migration file into individual statements on semicolons.
 
-    Respects single-quoted and double-quoted strings so semicolons inside
-    string literals are not treated as statement boundaries.
+    Correctly handles all PostgreSQL quoting contexts so that semicolons
+    inside string literals, identifiers, comments, or dollar-quoted blocks
+    ($$...$$, $tag$...$tag$) are never treated as statement boundaries.
     """
     statements: list[str] = []
     current: list[str] = []
+    i = 0
+    n = len(sql)
+
     in_single_quote = False
     in_double_quote = False
+    in_line_comment = False
+    in_block_comment = False
+    dollar_tag: str | None = None  # e.g. '$$' or '$body$'; None = not in dollar quote
 
-    for char in sql:
-        if char == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-        elif char == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
+    while i < n:
+        c = sql[i]
 
-        if char == ";" and not in_single_quote and not in_double_quote:
+        # ------------------------------------------------------------------ #
+        # Inside a line comment — consume until newline.                      #
+        # ------------------------------------------------------------------ #
+        if in_line_comment:
+            current.append(c)
+            if c == "\n":
+                in_line_comment = False
+            i += 1
+            continue
+
+        # ------------------------------------------------------------------ #
+        # Inside a block comment — consume until closing */.                  #
+        # ------------------------------------------------------------------ #
+        if in_block_comment:
+            current.append(c)
+            if c == "*" and i + 1 < n and sql[i + 1] == "/":
+                current.append(sql[i + 1])
+                i += 2
+                in_block_comment = False
+            else:
+                i += 1
+            continue
+
+        # ------------------------------------------------------------------ #
+        # Inside a dollar-quoted block — consume until the matching tag.      #
+        # ------------------------------------------------------------------ #
+        if dollar_tag is not None:
+            tag_len = len(dollar_tag)
+            if sql[i : i + tag_len] == dollar_tag:
+                current.extend(dollar_tag)
+                i += tag_len
+                dollar_tag = None
+            else:
+                current.append(c)
+                i += 1
+            continue
+
+        # ------------------------------------------------------------------ #
+        # Inside a single-quoted string — consume until closing quote,        #
+        # respecting '' escape sequences.                                      #
+        # ------------------------------------------------------------------ #
+        if in_single_quote:
+            current.append(c)
+            if c == "'" and i + 1 < n and sql[i + 1] == "'":
+                current.append(sql[i + 1])  # escaped quote
+                i += 2
+            elif c == "'":
+                in_single_quote = False
+                i += 1
+            else:
+                i += 1
+            continue
+
+        # ------------------------------------------------------------------ #
+        # Inside a double-quoted identifier.                                  #
+        # ------------------------------------------------------------------ #
+        if in_double_quote:
+            current.append(c)
+            if c == '"':
+                in_double_quote = False
+            i += 1
+            continue
+
+        # ------------------------------------------------------------------ #
+        # Not inside any special context — detect context openings.           #
+        # ------------------------------------------------------------------ #
+
+        # Line comment
+        if c == "-" and i + 1 < n and sql[i + 1] == "-":
+            in_line_comment = True
+            current.append(c)
+            i += 1
+            continue
+
+        # Block comment
+        if c == "/" and i + 1 < n and sql[i + 1] == "*":
+            in_block_comment = True
+            current.append(c)
+            current.append(sql[i + 1])
+            i += 2
+            continue
+
+        # Dollar quote: $optionaltag$ where tag is [A-Za-z0-9_]*
+        if c == "$":
+            j = i + 1
+            while j < n and (sql[j].isalnum() or sql[j] == "_"):
+                j += 1
+            if j < n and sql[j] == "$":
+                tag = sql[i : j + 1]
+                dollar_tag = tag
+                current.extend(tag)
+                i = j + 1
+                continue
+
+        # Single quote
+        if c == "'":
+            in_single_quote = True
+            current.append(c)
+            i += 1
+            continue
+
+        # Double quote
+        if c == '"':
+            in_double_quote = True
+            current.append(c)
+            i += 1
+            continue
+
+        # Semicolon outside all special contexts = statement boundary
+        if c == ";":
             statement = "".join(current).strip()
             if statement:
                 statements.append(statement)
             current = []
-        else:
-            current.append(char)
+            i += 1
+            continue
+
+        current.append(c)
+        i += 1
 
     tail = "".join(current).strip()
     if tail:
