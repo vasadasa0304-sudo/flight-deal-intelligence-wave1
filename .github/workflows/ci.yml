@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [staging, main]
+  pull_request:
+    branches: [staging, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: flight_deals_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/flight_deals_test
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/flight_deals_test
+      APP_ENV: test
+      WAVE_SCOPE: WAVE1
+      DISPLAY_CURRENCY: USD
+      AMADEUS_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: python -m ruff check src/ app/ scripts/ tests/
+
+      - name: Smoke tests (no Postgres needed)
+        run: python -m pytest tests/test_smoke.py -v
+
+      - name: Schema tests (requires Postgres)
+        run: python -m pytest tests/test_schema.py -v
+        # CI=true is set automatically by GitHub Actions.
+        # If schema tests skip, that is treated as a failure (see test_schema.py).
+
+      - name: All other tests
+        run: python -m pytest --ignore=tests/test_smoke.py --ignore=tests/test_schema.py -v
