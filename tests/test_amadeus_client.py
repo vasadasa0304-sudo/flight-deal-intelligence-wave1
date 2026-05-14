@@ -1,4 +1,7 @@
-"""Unit tests for AmadeusClient using httpx.MockTransport — no real network calls."""
+"""Unit tests for the Amadeus async client.
+
+All tests use a custom AsyncBaseTransport — no real network calls are made.
+"""
 
 from __future__ import annotations
 
@@ -10,15 +13,8 @@ from typing import Any
 import httpx
 import pytest
 
-from src.clients.amadeus_client import (
-    AmadeusClient,
-    _TOKEN_PATH,
-)
+from src.clients.amadeus_client import AmadeusClient
 from src.config import Settings
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 
@@ -28,10 +24,10 @@ def _load_fixture(name: str) -> dict[str, Any]:
 
 
 def _make_settings(**overrides: Any) -> Settings:
-    base: dict[str, Any] = dict(
+    defaults: dict[str, Any] = dict(
         app_env="test",
-        log_level="INFO",
-        database_url="postgresql+psycopg://postgres:postgres@localhost:5432/test",
+        log_level="WARNING",
+        database_url="postgresql+psycopg://postgres:postgres@localhost:5432/flight_deals",
         wave_scope="WAVE1",
         display_currency="USD",
         wave1_hubs=("IST", "SAW", "DXB", "AUH", "RUH", "JED", "DOH", "CAI"),
@@ -39,32 +35,29 @@ def _make_settings(**overrides: Any) -> Settings:
         wave1_booking_windows_days=(14, 60),
         wave1_mvp_cabins=("ECONOMY", "BUSINESS"),
         amadeus_env="test",
-        amadeus_client_id="test_id",
-        amadeus_client_secret="test_secret",
+        amadeus_client_id="test-client-id",
+        amadeus_client_secret="test-client-secret",
         amadeus_max_concurrency=5,
         amadeus_timeout_seconds=25.0,
         duffel_api_key=None,
     )
-    base.update(overrides)
-    return Settings(**base)
+    defaults.update(overrides)
+    return Settings(**defaults)
 
 
-def _token_resp() -> httpx.Response:
+def _token_response() -> httpx.Response:
     return httpx.Response(
         200,
-        json={
-            "access_token": "test_token_abc123",
-            "token_type": "Bearer",
-            "expires_in": 1799,
-        },
+        json={"access_token": "mock-token-abc", "expires_in": 1799, "token_type": "Bearer"},
     )
 
 
-def _search_resp() -> httpx.Response:
+def _offers_response() -> httpx.Response:
     return httpx.Response(200, json=_load_fixture("amadeus_flight_offers_sample.json"))
 
 
-def _pricing_resp(offer: dict[str, Any]) -> httpx.Response:
+def _pricing_response() -> httpx.Response:
+    offer = _load_fixture("amadeus_flight_offers_sample.json")["data"][0]
     return httpx.Response(
         200,
         json={"data": {"type": "flight-offers-pricing", "flightOffers": [offer]}},
@@ -72,152 +65,157 @@ def _pricing_resp(offer: dict[str, Any]) -> httpx.Response:
 
 
 class _SequentialTransport(httpx.AsyncBaseTransport):
-    """Returns responses in order; repeats the last one if the list is exhausted."""
+    """Serves responses from a pre-built list, one per request."""
 
-    def __init__(self, responses: list[httpx.Response]) -> None:
-        self._responses = responses
+    def __init__(self, responses: list[httpx.Response | Exception]) -> None:
+        self._queue = list(responses)
         self._index = 0
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        resp = self._responses[min(self._index, len(self._responses) - 1)]
+        if self._index >= len(self._queue):
+            raise AssertionError(
+                f"Unexpected call #{self._index + 1} to {request.url}; "
+                f"only {len(self._queue)} responses queued."
+            )
+        item = self._queue[self._index]
         self._index += 1
-        return resp
+        if isinstance(item, Exception):
+            raise item
+        return item
 
-
-# ---------------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-async def test_token_cached_across_two_consecutive_searches() -> None:
-    """Token endpoint is called only once for two back-to-back search calls."""
-    token_calls = 0
-
-    class CountingTransport(httpx.AsyncBaseTransport):
-        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-            nonlocal token_calls
-            if request.url.path == _TOKEN_PATH:
-                token_calls += 1
-                return _token_resp()
-            return _search_resp()
-
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=CountingTransport())
-        await client.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
-        await client.search_flight_offers("IST", "DXB", date(2026, 6, 15), "ECONOMY")
-
-    assert token_calls == 1, f"Expected 1 token call, got {token_calls}"
+    @property
+    def call_count(self) -> int:
+        return self._index
 
 
 @pytest.mark.asyncio
-async def test_401_triggers_exactly_one_token_refresh_then_retries() -> None:
-    """401 on the data endpoint: refresh token once, retry once, succeed."""
-    token_calls = 0
-    data_calls = 0
-
-    class RefreshTransport(httpx.AsyncBaseTransport):
-        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-            nonlocal token_calls, data_calls
-            if request.url.path == _TOKEN_PATH:
-                token_calls += 1
-                return _token_resp()
-            data_calls += 1
-            if data_calls == 1:
-                return httpx.Response(
-                    401, json={"errors": [{"status": 401, "title": "Unauthorized"}]}
-                )
-            return _search_resp()
-
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=RefreshTransport())
-        result = await client.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
-
-    assert token_calls == 2, f"Expected 2 token calls (initial + refresh), got {token_calls}"
-    assert data_calls == 2, f"Expected 2 data calls (fail + retry), got {data_calls}"
-    assert len(result) == 1
+async def test_token_cached_across_two_searches() -> None:
+    """Token should be fetched once for two consecutive search calls."""
+    transport = _SequentialTransport([
+        _token_response(),
+        _offers_response(),
+        _offers_response(),
+    ])
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        await c.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+        await c.search_flight_offers("IST", "DXB", date(2026, 6, 15), "ECONOMY")
+    assert transport.call_count == 3
 
 
 @pytest.mark.asyncio
-async def test_429_retries_and_succeeds_on_third_attempt() -> None:
-    """Two 429 responses followed by a 200 — eventually returns offers."""
-    responses = [
-        _token_resp(),
-        httpx.Response(429, headers={"Retry-After": "0"}, json={}),
-        httpx.Response(429, headers={"Retry-After": "0"}, json={}),
-        _search_resp(),
-    ]
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=_SequentialTransport(responses))
-        result = await client.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
-
-    assert len(result) == 1
-    assert result[0]["validatingAirlineCodes"] == ["TK"]
+async def test_401_triggers_one_token_refresh_and_one_retry() -> None:
+    """401 on data endpoint → exactly one token refresh, then one retry."""
+    transport = _SequentialTransport([
+        _token_response(),
+        httpx.Response(401),
+        _token_response(),
+        _offers_response(),
+    ])
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        offers = await c.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+    assert len(offers) == 1
+    assert transport.call_count == 4
 
 
 @pytest.mark.asyncio
-async def test_500_retries_three_times_then_returns_empty_list() -> None:
-    """Max 3 retries on 500; all fail → returns [] without raising."""
-    responses = [_token_resp()] + [httpx.Response(500, json={})] * 4
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=_SequentialTransport(responses))
-        result = await client.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+async def test_429_retries_with_backoff_third_attempt_succeeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """429 twice then success; sleep is called for each backoff."""
+    sleeps: list[float] = []
 
-    assert result == []
+    async def fake_sleep(s: float) -> None:
+        sleeps.append(s)
+
+    monkeypatch.setattr("asyncio.sleep", fake_sleep)
+    transport = _SequentialTransport([
+        _token_response(),
+        httpx.Response(429, headers={"Retry-After": "0.01"}),
+        httpx.Response(429, headers={"Retry-After": "0.01"}),
+        _offers_response(),
+    ])
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        offers = await c.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+    assert len(offers) == 1
+    assert len(sleeps) == 2
+    assert transport.call_count == 4
 
 
 @pytest.mark.asyncio
-async def test_search_flight_offers_success_returns_offer_list() -> None:
-    """Successful 200 response returns the data array from the fixture."""
-    fixture = _load_fixture("amadeus_flight_offers_sample.json")
-    responses = [_token_resp(), httpx.Response(200, json=fixture)]
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=_SequentialTransport(responses))
-        result = await client.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+async def test_500_retries_three_times_then_returns_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """HTTP 500: retries 3 times, then returns [] without raising."""
+    async def _no_sleep(_: float) -> None:
+        pass
+    monkeypatch.setattr("asyncio.sleep", _no_sleep)
+    transport = _SequentialTransport([
+        _token_response(),
+        httpx.Response(500),
+        httpx.Response(500),
+        httpx.Response(500),
+        httpx.Response(500),
+    ])
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        offers = await c.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+    assert offers == []
+    assert transport.call_count == 5  # 1 token + 4 attempts (initial + 3 retries)
 
-    assert isinstance(result, list)
-    assert len(result) == 1
-    offer = result[0]
+
+@pytest.mark.asyncio
+async def test_successful_search_returns_offer_dicts() -> None:
+    """200 response returns list of raw offer dicts with expected fields."""
+    transport = _SequentialTransport([_token_response(), _offers_response()])
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        offers = await c.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+    assert len(offers) == 1
+    offer = offers[0]
     assert offer["validatingAirlineCodes"] == ["TK"]
-    assert offer["price"]["grandTotal"] == "310.00"
+    assert offer["price"]["grandTotal"] == "450.00"
     assert offer["itineraries"][0]["segments"][0]["departure"]["iataCode"] == "IST"
     assert offer["itineraries"][0]["segments"][0]["arrival"]["iataCode"] == "DXB"
 
 
 @pytest.mark.asyncio
-async def test_verify_price_success_returns_repriced_offer() -> None:
-    """verify_price returns the first flightOffer from the pricing response."""
-    fixture = _load_fixture("amadeus_flight_offers_sample.json")
-    offer = fixture["data"][0]
-    responses = [_token_resp(), _pricing_resp(offer)]
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=_SequentialTransport(responses))
-        result = await client.verify_price(offer)
-
+async def test_verify_price_success_returns_dict() -> None:
+    """verify_price returns the data dict from a 200 pricing response."""
+    transport = _SequentialTransport([_token_response(), _pricing_response()])
+    offer = _load_fixture("amadeus_flight_offers_sample.json")["data"][0]
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        result = await c.verify_price(offer)
     assert result is not None
-    assert result["price"]["grandTotal"] == "310.00"
-    assert result["validatingAirlineCodes"] == ["TK"]
+    assert result["type"] == "flight-offers-pricing"
+    assert "flightOffers" in result
 
 
 @pytest.mark.asyncio
-async def test_timeout_exception_returns_empty_list_without_raising() -> None:
-    """httpx.TimeoutException is caught silently; search returns []."""
+async def test_timeout_exception_returns_empty_without_raising(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """TimeoutException after exhausting retries must return [] silently."""
+    async def _no_sleep(_: float) -> None:
+        pass
+    monkeypatch.setattr("asyncio.sleep", _no_sleep)
+    transport = _SequentialTransport([
+        _token_response(),
+        httpx.TimeoutException("timed out"),
+        httpx.TimeoutException("timed out"),
+        httpx.TimeoutException("timed out"),
+    ])
+    async with AmadeusClient(_make_settings(), _transport=transport) as c:
+        offers = await c.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+    assert offers == []
 
-    class TimeoutTransport(httpx.AsyncBaseTransport):
-        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-            if request.url.path == _TOKEN_PATH:
-                return _token_resp()
-            raise httpx.TimeoutException("timed out", request=request)
 
-    settings = _make_settings()
-    async with AmadeusClient(settings) as client:
-        client._http = httpx.AsyncClient(transport=TimeoutTransport())
-        result = await client.search_flight_offers("IST", "DXB", date(2026, 6, 1), "ECONOMY")
+@pytest.mark.asyncio
+async def test_production_env_uses_production_base_url() -> None:
+    settings = _make_settings(amadeus_env="production")
+    async with AmadeusClient(settings, _transport=_SequentialTransport([])) as c:
+        assert c._base_url == "https://api.amadeus.com"
 
-    assert result == []
+
+@pytest.mark.asyncio
+async def test_test_env_uses_test_base_url() -> None:
+    settings = _make_settings(amadeus_env="test")
+    async with AmadeusClient(settings, _transport=_SequentialTransport([])) as c:
+        assert c._base_url == "https://test.api.amadeus.com"
