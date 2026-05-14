@@ -1,0 +1,96 @@
+{
+  "_comment": "Hand-crafted minimal Amadeus v2 /shopping/flight-offers fixture for unit tests. NOT a real API response.",
+  "meta": {
+    "count": 1,
+    "links": {
+      "self": "https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=IST&destinationLocationCode=DXB&departureDate=2026-06-01&adults=1&travelClass=ECONOMY&nonStop=true&max=5"
+    }
+  },
+  "data": [
+    {
+      "type": "flight-offer",
+      "id": "1",
+      "source": "GDS",
+      "instantTicketingRequired": false,
+      "nonHomogeneous": false,
+      "oneWay": true,
+      "lastTicketingDate": "2026-05-28",
+      "numberOfBookableSeats": 9,
+      "itineraries": [
+        {
+          "duration": "PT4H",
+          "segments": [
+            {
+              "departure": {
+                "iataCode": "IST",
+                "terminal": "1",
+                "at": "2026-06-01T08:00:00"
+              },
+              "arrival": {
+                "iataCode": "DXB",
+                "terminal": "3",
+                "at": "2026-06-01T12:00:00"
+              },
+              "carrierCode": "TK",
+              "number": "760",
+              "aircraft": { "code": "77W" },
+              "operating": { "carrierCode": "TK" },
+              "duration": "PT4H",
+              "id": "1",
+              "numberOfStops": 0,
+              "blacklistedInEU": false
+            }
+          ]
+        }
+      ],
+      "price": {
+        "currency": "USD",
+        "total": "450.00",
+        "base": "380.00",
+        "grandTotal": "450.00",
+        "fees": [
+          { "amount": "0.00", "type": "SUPPLIER" },
+          { "amount": "0.00", "type": "TICKETING" }
+        ],
+        "taxes": [
+          { "amount": "70.00", "code": "YQ" }
+        ]
+      },
+      "pricingOptions": {
+        "fareType": ["PUBLISHED"],
+        "includedCheckedBagsOnly": false
+      },
+      "validatingAirlineCodes": ["TK"],
+      "travelerPricings": [
+        {
+          "travelerId": "1",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "USD",
+            "total": "450.00",
+            "base": "380.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "YOWUS",
+              "class": "Y",
+              "includedCheckedBags": { "weight": 23, "weightUnit": "KG" }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dictionaries": {
+    "locations": {
+      "IST": { "cityCode": "IST", "countryCode": "TR" },
+      "DXB": { "cityCode": "DXB", "countryCode": "AE" }
+    },
+    "aircraft": { "77W": "BOEING 777-300ER" },
+    "currencies": { "USD": "US DOLLAR" },
+    "carriers": { "TK": "TURKISH AIRLINES" }
+  }
+}

@@ -41,6 +41,8 @@ class Settings:
     amadeus_env: str
     amadeus_client_id: str | None
     amadeus_client_secret: str | None
+    amadeus_max_concurrency: int
+    amadeus_timeout_seconds: float
     duffel_api_key: str | None
 
     def validate_wave1(self) -> None:
@@ -76,6 +78,8 @@ def load_settings() -> Settings:
         amadeus_env=os.getenv("AMADEUS_ENV", "test"),
         amadeus_client_id=os.getenv("AMADEUS_CLIENT_ID") or None,
         amadeus_client_secret=os.getenv("AMADEUS_CLIENT_SECRET") or None,
+        amadeus_max_concurrency=int(os.getenv("AMADEUS_MAX_CONCURRENCY", "5")),
+        amadeus_timeout_seconds=float(os.getenv("AMADEUS_TIMEOUT_SECONDS", "25.0")),
         duffel_api_key=os.getenv("DUFFEL_API_KEY") or None,
     )
     settings.validate_wave1()
