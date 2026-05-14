@@ -28,7 +28,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     logger.info("Starting Wave1 seed loader. seed_dir=%s", seed_dir)
     if args.validate_only:
-        dataset = validate_seed_files(seed_dir)
+        try:
+            dataset = validate_seed_files(seed_dir)
+        except ValueError as exc:
+            logger.error("Seed validation failed: %s", exc)
+            return 1
         print("Validation passed. No rows inserted.")
         print(format_load_summary(summary_from_dataset(dataset)))
         return 0
@@ -42,7 +46,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     settings = load_settings()
     engine = get_engine(settings)
     try:
-        summary = load_seed_data(engine, seed_dir, truncate=args.truncate)
+        try:
+            summary = load_seed_data(engine, seed_dir, truncate=args.truncate)
+        except ValueError as exc:
+            logger.error("Seed validation failed: %s", exc)
+            return 1
     finally:
         engine.dispose()
 

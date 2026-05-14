@@ -99,8 +99,23 @@ def test_validate_only_cli_exits_without_writing_rows(
     assert _table_counts(empty_seed_schema) == _zero_counts()
 
 
+def test_validate_only_cli_returns_1_on_validation_error(
+    empty_seed_schema: Engine,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    seed_dir = _copy_seed_dir(tmp_path)
+    _replace_first_watchlist_value(seed_dir, "airline_code", "ZZ")
+    monkeypatch.chdir(tmp_path)
+
+    exit_code = load_seed_cli(["--validate-only"])
+
+    assert exit_code == 1
+    assert _table_counts(empty_seed_schema) == _zero_counts()
+
+
 def _copy_seed_dir(tmp_path: Path) -> Path:
-    seed_dir = tmp_path / "seed"
+    seed_dir = tmp_path / "data" / "seed"
     shutil.copytree(SEED_DIR, seed_dir)
     return seed_dir
 
