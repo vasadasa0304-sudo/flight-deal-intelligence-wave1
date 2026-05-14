@@ -1,0 +1,11 @@
+airline_code,airline_name,carrier_type,primary_hub,is_wave1_airline,is_active
+TK,Turkish Airlines,FSC,IST,TRUE,TRUE
+PC,Pegasus,LCC,SAW,TRUE,TRUE
+EK,Emirates,FSC,DXB,TRUE,TRUE
+FZ,flydubai,HYBRID,DXB,TRUE,TRUE
+QR,Qatar Airways,FSC,DOH,TRUE,TRUE
+EY,Etihad,FSC,AUH,TRUE,TRUE
+SV,Saudia,FSC,JED,TRUE,TRUE
+XY,flynas,LCC,RUH,TRUE,TRUE
+MS,EgyptAir,FSC,CAI,TRUE,TRUE
+G9,Air Arabia,LCC,SHJ,TRUE,TRUE

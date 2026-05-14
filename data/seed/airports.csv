@@ -1,0 +1,42 @@
+airport_code,city,country,region,timezone,is_wave1_hub,is_active
+ADD,Addis Ababa,Ethiopia,Africa,Africa/Addis_Ababa,FALSE,TRUE
+ALA,Almaty,Kazakhstan,Central Asia,Asia/Almaty,FALSE,TRUE
+AMS,Amsterdam,Netherlands,Europe,Europe/Amsterdam,FALSE,TRUE
+ANK,Ankara,Turkey,Middle East + Turkey,Europe/Istanbul,FALSE,TRUE
+ASW,Aswan,Egypt,Middle East + Turkey,Africa/Cairo,FALSE,TRUE
+AUH,Abu Dhabi,United Arab Emirates,Middle East + Turkey,Asia/Dubai,TRUE,TRUE
+AYT,Antalya,Turkey,Middle East + Turkey,Europe/Istanbul,FALSE,TRUE
+BER,Berlin Brandenburg,Germany,Europe,Europe/Berlin,FALSE,TRUE
+BKK,Bangkok,Thailand,Southeast Asia,Asia/Bangkok,FALSE,TRUE
+BOM,Mumbai,India,South Asia,Asia/Kolkata,FALSE,TRUE
+CAI,Cairo,Egypt,Middle East + Turkey,Africa/Cairo,TRUE,TRUE
+CDG,Paris Charles de Gaulle,France,Europe,Europe/Paris,FALSE,TRUE
+CMB,Colombo,Sri Lanka,South Asia,Asia/Colombo,FALSE,TRUE
+DEL,Delhi,India,South Asia,Asia/Kolkata,FALSE,TRUE
+DMM,Dammam,Saudi Arabia,Middle East + Turkey,Asia/Riyadh,FALSE,TRUE
+DOH,Doha,Qatar,Middle East + Turkey,Asia/Qatar,TRUE,TRUE
+DXB,Dubai,United Arab Emirates,Middle East + Turkey,Asia/Dubai,TRUE,TRUE
+FRA,Frankfurt,Germany,Europe,Europe/Berlin,FALSE,TRUE
+GYD,Baku,Azerbaijan,South Caucasus,Asia/Baku,FALSE,TRUE
+HRG,Hurghada,Egypt,Middle East + Turkey,Africa/Cairo,FALSE,TRUE
+IAD,Washington Dulles,United States,North America,America/New_York,FALSE,TRUE
+ISB,Islamabad,Pakistan,South Asia,Asia/Karachi,FALSE,TRUE
+IST,Istanbul,Turkey,Middle East + Turkey,Europe/Istanbul,TRUE,TRUE
+JED,Jeddah,Saudi Arabia,Middle East + Turkey,Asia/Riyadh,TRUE,TRUE
+JFK,New York John F. Kennedy,United States,North America,America/New_York,FALSE,TRUE
+JNB,Johannesburg,South Africa,Africa,Africa/Johannesburg,FALSE,TRUE
+KHI,Karachi,Pakistan,South Asia,Asia/Karachi,FALSE,TRUE
+KTM,Kathmandu,Nepal,South Asia,Asia/Kathmandu,FALSE,TRUE
+KWI,Kuwait City,Kuwait,Middle East,Asia/Kuwait,FALSE,TRUE
+LHE,Lahore,Pakistan,South Asia,Asia/Karachi,FALSE,TRUE
+LHR,London Heathrow,United Kingdom,Europe,Europe/London,FALSE,TRUE
+LXR,Luxor,Egypt,Middle East + Turkey,Africa/Cairo,FALSE,TRUE
+MAN,Manchester,United Kingdom,Europe,Europe/London,FALSE,TRUE
+MED,Medina,Saudi Arabia,Middle East + Turkey,Asia/Riyadh,FALSE,TRUE
+NBO,Nairobi,Kenya,Africa,Africa/Nairobi,FALSE,TRUE
+NQZ,Astana,Kazakhstan,Central Asia,Asia/Almaty,FALSE,TRUE
+RUH,Riyadh,Saudi Arabia,Middle East + Turkey,Asia/Riyadh,TRUE,TRUE
+SAW,Istanbul Sabiha Gokcen,Turkey,Middle East + Turkey,Europe/Istanbul,TRUE,TRUE
+SSH,Sharm El Sheikh,Egypt,Middle East + Turkey,Africa/Cairo,FALSE,TRUE
+TAS,Tashkent,Uzbekistan,Central Asia,Asia/Tashkent,FALSE,TRUE
+VKO,Moscow Vnukovo,Russia,Europe,Europe/Moscow,FALSE,TRUE

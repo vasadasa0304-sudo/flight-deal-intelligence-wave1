@@ -1,0 +1,83 @@
+route_id,origin,destination,route_type,route_priority,strategic_tag,strategic_relevance,carrier_overlap_notes,source_document_note,is_new_launch,is_active
+AUH-BKK,AUH,BKK,INTERNATIONAL,STANDARD,STANDARD,,"Etihad, Thai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-BOM,AUH,BOM,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Etihad, Air India, IndiGo, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-CAI,AUH,CAI,INTERNATIONAL,TIER_2_EVERY_2_DAYS,STANDARD,,"Etihad, EgyptAir, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-DEL,AUH,DEL,INTERNATIONAL,STANDARD,STANDARD,,"Etihad, Air India, IndiGo",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-JED,AUH,JED,INTERNATIONAL,STANDARD,STANDARD,,"Etihad, Saudia, flynas",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-JFK,AUH,JFK,INTERNATIONAL,STANDARD,STANDARD,,Etihad,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-KHI,AUH,KHI,INTERNATIONAL,STANDARD,STANDARD,,"Etihad, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-LHR,AUH,LHR,INTERNATIONAL,STANDARD,STANDARD,,"Etihad, BA",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+AUH-NBO,AUH,NBO,INTERNATIONAL,STANDARD,WAVE_2_PRESEED,Wave 2 pre-seed,"Etihad, Kenya",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-ASW,CAI,ASW,DOMESTIC,STANDARD,STANDARD,,"EgyptAir, Air Cairo",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-CDG,CAI,CDG,INTERNATIONAL,STANDARD,STANDARD,,"EgyptAir, Air France, Lufthansa",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-FRA,CAI,FRA,INTERNATIONAL,STANDARD,STANDARD,,"EgyptAir, Air France, Lufthansa",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-HRG,CAI,HRG,DOMESTIC,STANDARD,STANDARD,,"EgyptAir, Nile Air, Air Cairo",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-JFK,CAI,JFK,INTERNATIONAL,STANDARD,STANDARD,,EgyptAir,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-LHR,CAI,LHR,INTERNATIONAL,STANDARD,STANDARD,,"EgyptAir, BA",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-LXR,CAI,LXR,DOMESTIC,STANDARD,STANDARD,,"EgyptAir, Air Cairo, Nile Air",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-RUH,CAI,RUH,INTERNATIONAL,TIER_2_EVERY_2_DAYS,STANDARD,,"EgyptAir, Saudia, flynas",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+CAI-SSH,CAI,SSH,DOMESTIC,STANDARD,STANDARD,,"EgyptAir, Nile Air, Air Cairo",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-ALA,DOH,ALA,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,Qatar Airways,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-BKK,DOH,BKK,INTERNATIONAL,STANDARD,STANDARD,,Qatar Airways,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-CAI,DOH,CAI,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, EgyptAir",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-CDG,DOH,CDG,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, Air France",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-CMB,DOH,CMB,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, SriLankan",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-DXB,DOH,DXB,INTERNATIONAL,TIER_2_EVERY_2_DAYS,STANDARD,,"Qatar Airways, flydubai, Emirates",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-JED,DOH,JED,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, Saudia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-JFK,DOH,JFK,INTERNATIONAL,STANDARD,STANDARD,,Qatar Airways,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-LHR,DOH,LHR,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, BA",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-MAN,DOH,MAN,INTERNATIONAL,STANDARD,STANDARD,,Qatar Airways,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-RUH,DOH,RUH,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, Saudia, flynas",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DOH-TAS,DOH,TAS,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,Qatar Airways,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-ADD,DXB,ADD,INTERNATIONAL,STANDARD,WAVE_2_PRESEED,Wave 2 pre-seed,"flydubai, Ethiopian, Emirates",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-ALA,DXB,ALA,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,"Emirates, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-BKK,DXB,BKK,INTERNATIONAL,STANDARD,STANDARD,,Emirates,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-BOM,DXB,BOM,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Emirates, Air India, IndiGo, SpiceJet, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-CAI,DXB,CAI,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Emirates, EgyptAir, flydubai, Air Arabia; EgyptAir, Emirates, flydubai, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-CDG,DXB,CDG,INTERNATIONAL,STANDARD,STANDARD,,"Emirates, Air France, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-DEL,DXB,DEL,INTERNATIONAL,STANDARD,STANDARD,,"Emirates, Air India, IndiGo, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-GYD,DXB,GYD,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,"Emirates, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-ISB,DXB,ISB,INTERNATIONAL,STANDARD,STANDARD,,"flydubai, PIA, Emirates, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-JED,DXB,JED,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Emirates, flydubai, Saudia, flynas, flyadeal; Saudia, Emirates, flydubai, flynas",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-JFK,DXB,JFK,INTERNATIONAL,STANDARD,STANDARD,,"Emirates, United, Etihad",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-JNB,DXB,JNB,INTERNATIONAL,STANDARD,WAVE_2_PRESEED,Wave 2 pre-seed,"Emirates, SAA",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-KHI,DXB,KHI,INTERNATIONAL,STANDARD,STANDARD,,"flydubai, PIA, Emirates, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-KTM,DXB,KTM,INTERNATIONAL,STANDARD,STANDARD,,"flydubai, Himalaya, FlyDubai-Emirates codeshare",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-LHE,DXB,LHE,INTERNATIONAL,STANDARD,STANDARD,,"flydubai, PIA, Emirates, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-LHR,DXB,LHR,INTERNATIONAL,STANDARD,STANDARD,,"Emirates, BA, Virgin",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-MAN,DXB,MAN,INTERNATIONAL,STANDARD,STANDARD,,Emirates,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-NBO,DXB,NBO,INTERNATIONAL,STANDARD,WAVE_2_PRESEED,Wave 2 pre-seed,"Emirates, Kenya Airways, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-RUH,DXB,RUH,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Emirates, flydubai, Saudia, flynas, flyadeal; Emirates, Saudia, flynas, flydubai, flyadeal",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-TAS,DXB,TAS,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,"Emirates, flydubai",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+DXB-VKO,DXB,VKO,INTERNATIONAL,STANDARD,STANDARD,,"flydubai, Aeroflot, Emirates",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-ALA,IST,ALA,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed,"Turkish Airlines, Pegasus, Air Astana",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-AMS,IST,AMS,INTERNATIONAL,TIER_2_EVERY_2_DAYS,STANDARD,,"Turkish Airlines, KLM, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-ANK,IST,ANK,DOMESTIC,STANDARD,STANDARD,,"Turkish Airlines, Pegasus, AJet",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-AYT,IST,AYT,DOMESTIC,STANDARD,STANDARD,,"Pegasus, Turkish Airlines, AJet, SunExpress",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-BER,IST,BER,INTERNATIONAL,STANDARD,STANDARD,,"Turkish Airlines, Pegasus, Lufthansa",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-CAI,IST,CAI,INTERNATIONAL,STANDARD,STANDARD,,"EgyptAir, Turkish Airlines, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-CDG,IST,CDG,INTERNATIONAL,TIER_2_EVERY_2_DAYS,STANDARD,,"Turkish Airlines, Air France, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-DOH,IST,DOH,INTERNATIONAL,STANDARD,STANDARD,,"Qatar Airways, Turkish Airlines, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-DXB,IST,DXB,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Turkish Airlines, Emirates, flydubai, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-FRA,IST,FRA,INTERNATIONAL,TIER_2_EVERY_2_DAYS,STANDARD,,"Turkish Airlines, Lufthansa, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-GYD,IST,GYD,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed,"Turkish Airlines, Pegasus, AZAL, Buta Airways",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-JED,IST,JED,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Turkish Airlines, Saudia, flynas, flyadeal, Pegasus; Saudia, Turkish Airlines, flynas, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-JFK,IST,JFK,INTERNATIONAL,STANDARD,STANDARD,,Turkish Airlines,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-LHR,IST,LHR,INTERNATIONAL,STANDARD,STANDARD,,"Turkish Airlines, British Airways, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-NQZ,IST,NQZ,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,"Turkish Airlines, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+IST-TAS,IST,TAS,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed,"Turkish Airlines, Pegasus, Uzbekistan Airways",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+JED-CAI,JED,CAI,INTERNATIONAL,TIER_1_DAILY,STANDARD,,"Saudia, EgyptAir, flynas, flyadeal, Air Arabia; EgyptAir, Saudia, flynas, flyadeal, Air Arabia",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+JED-DMM,JED,DMM,DOMESTIC,STANDARD,STANDARD,,"Saudia, flynas, flyadeal",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+JED-KWI,JED,KWI,INTERNATIONAL,STANDARD,STANDARD,,"flynas, Jazeera, Kuwait Airways",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+JED-LHR,JED,LHR,INTERNATIONAL,STANDARD,STANDARD,,"Saudia, BA",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+JED-RUH,JED,RUH,DOMESTIC,TIER_1_DAILY,STANDARD,,"Saudia, flynas, flyadeal",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+RUH-DMM,RUH,DMM,DOMESTIC,STANDARD,STANDARD,,"Saudia, flynas, flyadeal",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+RUH-IAD,RUH,IAD,INTERNATIONAL,STANDARD,STANDARD,,Saudia,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+RUH-JFK,RUH,JFK,INTERNATIONAL,STANDARD,STANDARD,,Saudia,Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+RUH-LHR,RUH,LHR,INTERNATIONAL,STANDARD,STANDARD,,"Saudia, BA, Riyadh Air (new)",Seeded from employer Wave1 route plan; live schedule validation required.,TRUE,TRUE
+RUH-MED,RUH,MED,DOMESTIC,STANDARD,STANDARD,,"Saudia, flynas, flyadeal",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+SAW-ALA,SAW,ALA,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed,"Turkish Airlines, Pegasus, Air Astana",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+SAW-AYT,SAW,AYT,DOMESTIC,STANDARD,STANDARD,,"Pegasus, Turkish Airlines, AJet, SunExpress",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+SAW-GYD,SAW,GYD,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed,"Turkish Airlines, Pegasus, AZAL, Buta Airways",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+SAW-NQZ,SAW,NQZ,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed; section 5.5,"Turkish Airlines, Pegasus",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
+SAW-TAS,SAW,TAS,INTERNATIONAL,STANDARD,WAVE_3_PRESEED,Wave 3 pre-seed,"Turkish Airlines, Pegasus, Uzbekistan Airways",Seeded from employer Wave1 route plan; live schedule validation required.,FALSE,TRUE
