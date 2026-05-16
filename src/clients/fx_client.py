@@ -33,7 +33,7 @@ class FxClient:
         timeout_seconds: float = 15.0,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
-        self.provider = (provider or os.getenv("FX_PROVIDER", FX_PROVIDER_FRANKFURTER)).upper()
+        self.provider = (provider or os.getenv("FX_PROVIDER") or FX_PROVIDER_FRANKFURTER).upper()
         if self.provider != FX_PROVIDER_FRANKFURTER:
             raise ValueError(f"Unsupported FX_PROVIDER: {self.provider}")
         self._db_session = db_session

@@ -19,8 +19,15 @@ from src.logging_config import configure_logging
 
 logger = logging.getLogger(__name__)
 
-WAVE1_BASE_CURRENCIES = ("TRY", "AED", "QAR", "SAR", "EGP")
-QUOTE_CURRENCIES = ("USD", "EUR", "GBP")
+WAVE1_BASE_CURRENCIES = ("TRY", "AED", "QAR", "SAR", "EGP", "USD")
+QUOTE_CURRENCIES_BY_BASE: dict[str, tuple[str, ...]] = {
+    "TRY": ("USD", "EUR", "GBP"),
+    "AED": ("USD", "EUR", "GBP"),
+    "QAR": ("USD", "EUR", "GBP"),
+    "SAR": ("USD", "EUR", "GBP"),
+    "EGP": ("USD", "EUR", "GBP"),
+    "USD": ("TRY", "AED", "QAR", "SAR", "EGP"),
+}
 
 
 async def main(argv: Sequence[str] | None = None) -> int:
@@ -42,7 +49,7 @@ async def main(argv: Sequence[str] | None = None) -> int:
                         rates = await client.fetch_for_date(
                             rate_date,
                             base=base,
-                            symbols=list(QUOTE_CURRENCIES),
+                            symbols=list(QUOTE_CURRENCIES_BY_BASE[base]),
                         )
                         inserted += _upsert_rates(connection, rate_date, base, rates)
     finally:

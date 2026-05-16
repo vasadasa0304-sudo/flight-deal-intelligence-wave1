@@ -305,6 +305,12 @@ class DetectedAnomaly(Base):
         CheckConstraint("confidence_score between 0 and 1", name="ck_detected_anomalies_confidence_score"),
         CheckConstraint("threshold_set in ('SOW', 'LCC_EXPERIMENTAL')", name="ck_detected_anomalies_threshold_set"),
         CheckConstraint("status in ('DETECTED', 'VERIFIED', 'REJECTED', 'EXPORTED', 'ESCALATED')", name="ck_detected_anomalies_status"),
+        UniqueConstraint(
+            "price_observation_id",
+            "baseline_id",
+            "threshold_set",
+            name="uq_detected_anomalies_obs_baseline_threshold",
+        ),
         # Grain FKs — observation and baseline must belong to the same watch_id.
         ForeignKeyConstraint(
             ["price_observation_id", "watch_id"],

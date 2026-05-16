@@ -153,7 +153,7 @@ def _upsert_baseline(
                 :p25_price_native, :p75_price_native, :iqr_price_native,
                 :observation_count, :baseline_health
             )
-            ON CONFLICT (watch_id, baseline_date) DO UPDATE SET
+            ON CONFLICT ON CONSTRAINT uq_baselines_watch_date DO UPDATE SET
                 route_id            = EXCLUDED.route_id,
                 origin              = EXCLUDED.origin,
                 destination         = EXCLUDED.destination,

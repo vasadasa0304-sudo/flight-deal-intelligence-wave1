@@ -60,5 +60,5 @@ def test_watchlist_loader_rejects_active_phase2_cabins(tmp_path: Path) -> None:
 def test_detector_classifies_wave1_deal() -> None:
     """A fare meeting both Wave1 thresholds should classify."""
     result = detect_candidate(current_amount=Decimal("100"), baseline_amount=Decimal("200"))
-    assert result.tier == "Deal"
+    assert result.tier == "DEAL"
     assert result.absolute_saving == Decimal("100")

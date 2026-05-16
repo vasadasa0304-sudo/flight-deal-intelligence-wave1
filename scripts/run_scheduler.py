@@ -61,8 +61,12 @@ async def _run_scheduler() -> None:
     try:
         while True:
             await asyncio.sleep(3600)
-    except (KeyboardInterrupt, SystemExit):
+    except KeyboardInterrupt:
         scheduler.shutdown()
+        raise
+    except SystemExit:
+        scheduler.shutdown()
+        raise
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
