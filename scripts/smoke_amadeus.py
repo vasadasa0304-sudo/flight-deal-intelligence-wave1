@@ -41,6 +41,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("smoke_amadeus")
 logger.setLevel(logging.DEBUG)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # Routes probed in order.  Starts with historically seeded test-sandbox routes,
 # then adds Wave1-adjacent routes to catch any sandbox expansions.
