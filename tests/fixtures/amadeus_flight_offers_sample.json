@@ -1,7 +1,7 @@
 {
-  "_comment": "Hand-crafted fixture — NOT a real Amadeus API response. Used only for unit tests.",
+  "_comment": "Hand-crafted fixture \u2014 NOT a real Amadeus API response. Used only for unit tests.",
   "meta": {
-    "count": 1,
+    "count": 4,
     "links": {
       "self": "https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=YUL&destinationLocationCode=CDG&departureDate=2025-09-01&adults=1&travelClass=ECONOMY&nonStop=true&max=5"
     }
@@ -16,7 +16,9 @@
       "oneWay": true,
       "lastTicketingDate": "2025-08-25",
       "numberOfBookableSeats": 4,
-      "validatingAirlineCodes": ["AC"],
+      "validatingAirlineCodes": [
+        "AC"
+      ],
       "travelerPricings": [
         {
           "travelerId": "1",
@@ -57,7 +59,9 @@
         ]
       },
       "pricingOptions": {
-        "fareType": ["PUBLISHED"],
+        "fareType": [
+          "PUBLISHED"
+        ],
         "includedCheckedBagsOnly": true
       },
       "itineraries": [
@@ -80,6 +84,296 @@
               },
               "carrierCode": "AC",
               "number": "870",
+              "aircraft": {
+                "code": "789"
+              },
+              "operating": {
+                "carrierCode": "AC"
+              },
+              "duration": "PT7H10M"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "flight-offer",
+      "id": "2",
+      "source": "GDS",
+      "instantTicketingRequired": false,
+      "nonHomogeneous": false,
+      "oneWay": true,
+      "lastTicketingDate": "2025-08-25",
+      "numberOfBookableSeats": 4,
+      "validatingAirlineCodes": [
+        "BA"
+      ],
+      "travelerPricings": [
+        {
+          "travelerId": "1",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "CAD",
+            "total": "500.00",
+            "base": "420.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "YOW2AUCH",
+              "class": "Y",
+              "includedCheckedBags": {
+                "quantity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "price": {
+        "currency": "CAD",
+        "total": "500.00",
+        "base": "420.00",
+        "grandTotal": "500.00",
+        "fees": [
+          {
+            "amount": "0.00",
+            "type": "SUPPLIER"
+          },
+          {
+            "amount": "0.00",
+            "type": "TICKETING"
+          }
+        ]
+      },
+      "pricingOptions": {
+        "fareType": [
+          "PUBLISHED"
+        ],
+        "includedCheckedBagsOnly": true
+      },
+      "itineraries": [
+        {
+          "duration": "PT7H10M",
+          "segments": [
+            {
+              "id": "1",
+              "numberOfStops": 0,
+              "blacklistedInEU": false,
+              "departure": {
+                "iataCode": "YUL",
+                "terminal": "1",
+                "at": "2025-09-01T18:30:00"
+              },
+              "arrival": {
+                "iataCode": "CDG",
+                "terminal": "2E",
+                "at": "2025-09-02T07:40:00"
+              },
+              "carrierCode": "BA",
+              "number": "870",
+              "aircraft": {
+                "code": "789"
+              },
+              "operating": {
+                "carrierCode": "BA"
+              },
+              "duration": "PT7H10M"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "flight-offer",
+      "id": "3",
+      "source": "GDS",
+      "instantTicketingRequired": false,
+      "nonHomogeneous": false,
+      "oneWay": true,
+      "lastTicketingDate": "2025-08-25",
+      "numberOfBookableSeats": 4,
+      "validatingAirlineCodes": [
+        "AC"
+      ],
+      "travelerPricings": [
+        {
+          "travelerId": "1",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "CAD",
+            "total": "700.00",
+            "base": "560.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "YOW2AUCH",
+              "class": "Y",
+              "includedCheckedBags": {
+                "quantity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "price": {
+        "currency": "CAD",
+        "total": "700.00",
+        "base": "560.00",
+        "grandTotal": "700.00",
+        "fees": [
+          {
+            "amount": "0.00",
+            "type": "SUPPLIER"
+          },
+          {
+            "amount": "0.00",
+            "type": "TICKETING"
+          }
+        ]
+      },
+      "pricingOptions": {
+        "fareType": [
+          "PUBLISHED"
+        ],
+        "includedCheckedBagsOnly": true
+      },
+      "itineraries": [
+        {
+          "duration": "PT7H10M",
+          "segments": [
+            {
+              "id": "1",
+              "numberOfStops": 0,
+              "blacklistedInEU": false,
+              "departure": {
+                "iataCode": "YUL",
+                "terminal": "1",
+                "at": "2025-09-01T18:30:00"
+              },
+              "arrival": {
+                "iataCode": "CDG",
+                "terminal": "2E",
+                "at": "2025-09-02T07:40:00"
+              },
+              "carrierCode": "AC",
+              "number": "870",
+              "aircraft": {
+                "code": "789"
+              },
+              "operating": {
+                "carrierCode": "AC"
+              },
+              "duration": "PT7H10M"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "flight-offer",
+      "id": "4",
+      "source": "GDS",
+      "instantTicketingRequired": false,
+      "nonHomogeneous": false,
+      "oneWay": true,
+      "lastTicketingDate": "2025-08-25",
+      "numberOfBookableSeats": 4,
+      "validatingAirlineCodes": [
+        "AC"
+      ],
+      "travelerPricings": [
+        {
+          "travelerId": "1",
+          "fareOption": "STANDARD",
+          "travelerType": "ADULT",
+          "price": {
+            "currency": "CAD",
+            "total": "300.00",
+            "base": "250.00"
+          },
+          "fareDetailsBySegment": [
+            {
+              "segmentId": "1",
+              "cabin": "ECONOMY",
+              "fareBasis": "YOW2AUCH",
+              "class": "Y",
+              "includedCheckedBags": {
+                "quantity": 1
+              }
+            }
+          ]
+        }
+      ],
+      "price": {
+        "currency": "CAD",
+        "total": "300.00",
+        "base": "250.00",
+        "grandTotal": "300.00",
+        "fees": [
+          {
+            "amount": "0.00",
+            "type": "SUPPLIER"
+          },
+          {
+            "amount": "0.00",
+            "type": "TICKETING"
+          }
+        ]
+      },
+      "pricingOptions": {
+        "fareType": [
+          "PUBLISHED"
+        ],
+        "includedCheckedBagsOnly": true
+      },
+      "itineraries": [
+        {
+          "duration": "PT7H10M",
+          "segments": [
+            {
+              "id": "1",
+              "numberOfStops": 1,
+              "blacklistedInEU": false,
+              "departure": {
+                "iataCode": "YUL",
+                "terminal": "1",
+                "at": "2025-09-01T18:30:00"
+              },
+              "arrival": {
+                "iataCode": "AMS",
+                "terminal": "2E",
+                "at": "2025-09-02T05:30:00"
+              },
+              "carrierCode": "AC",
+              "number": "870",
+              "aircraft": {
+                "code": "789"
+              },
+              "operating": {
+                "carrierCode": "AC"
+              },
+              "duration": "PT7H10M"
+            },
+            {
+              "id": "2",
+              "numberOfStops": 0,
+              "blacklistedInEU": false,
+              "departure": {
+                "iataCode": "AMS",
+                "at": "2025-09-02T07:00:00"
+              },
+              "arrival": {
+                "iataCode": "CDG",
+                "terminal": "2E",
+                "at": "2025-09-02T08:15:00"
+              },
+              "carrierCode": "AC",
+              "number": "871",
               "aircraft": {
                 "code": "789"
               },

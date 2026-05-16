@@ -257,7 +257,7 @@ async def test_search_flight_offers_success_returns_list_of_dicts() -> None:
         )
 
     assert isinstance(result, list), "Result should be a list"
-    assert len(result) == 1, "Fixture contains one offer"
+    assert len(result) >= 1, "Fixture contains at least one offer"
 
     offer = result[0]
     # Spot-check the key fields the spec requires in the fixture
