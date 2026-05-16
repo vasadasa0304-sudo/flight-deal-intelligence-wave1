@@ -16,7 +16,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 import httpx
@@ -220,11 +220,11 @@ class AmadeusClient:
                     INSERT INTO api_request_logs
                         (provider, endpoint, method, status_code, duration_ms,
                          success, error_message, request_id, estimated_cost_usd,
-                         created_at)
+                         requested_at)
                     VALUES
                         (:provider, :endpoint, :method, :status_code, :duration_ms,
                          :success, :error_message, :request_id, :estimated_cost_usd,
-                         :created_at)
+                         :requested_at)
                     """
                 ),
                 {
@@ -237,7 +237,7 @@ class AmadeusClient:
                     "error_message": error_message,
                     "request_id": request_id,
                     "estimated_cost_usd": estimated_cost_usd,
-                    "created_at": datetime.utcnow(),
+                    "requested_at": datetime.now(UTC),
                 },
             )
             await self._db_session.commit()

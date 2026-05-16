@@ -84,6 +84,15 @@ def _extract_first_offer_info(
     return total, currency, (carriers[0] if carriers else None)
 
 
+async def _check_token(client: AmadeusClient) -> tuple[bool, str]:
+    """Try to obtain an OAuth token. Returns (success, detail)."""
+    try:
+        token = await client._fetch_token()
+        return True, f"token acquired ({token[:8]}...)"
+    except RuntimeError as exc:
+        return False, str(exc)
+
+
 async def main() -> int:
     settings = load_settings()
 
@@ -108,10 +117,33 @@ async def main() -> int:
     first_hit_offer: dict | None = None
 
     async with AmadeusClient(settings) as client:
+        token_ok, token_detail = await _check_token(client)
+        if not token_ok:
+            logger.error("OAuth precheck failed — %s", token_detail)
+            logger.error(
+                "Credentials are rejected by env=%s. "
+                "Check AMADEUS_CLIENT_ID / AMADEUS_CLIENT_SECRET.",
+                env_label,
+            )
+            return 1
+        logger.info("OAuth precheck passed — %s", token_detail)
+
         outer_done = False
+        consecutive_empty_routes = 0
+        MAX_CONSECUTIVE_EMPTY_ROUTES = 2
+
         for origin, destination in PROBE_ROUTES:
             if outer_done:
                 break
+            if consecutive_empty_routes >= MAX_CONSECUTIVE_EMPTY_ROUTES:
+                logger.warning(
+                    "%d consecutive routes returned 0 offers on all dates; "
+                    "aborting remaining probes — sandbox appears to have no data.",
+                    consecutive_empty_routes,
+                )
+                break
+
+            route_hits = 0
             for dep_date in probe_dates:
                 route_label = f"{origin}→{destination}"
                 logger.debug("Probing %s on %s...", route_label, dep_date)
@@ -126,6 +158,7 @@ async def main() -> int:
                 )
 
                 if offers:
+                    route_hits += 1
                     total, currency, carrier = _extract_first_offer_info(offers[0])
                     results.append(
                         _ProbeResult(
@@ -163,6 +196,11 @@ async def main() -> int:
                         )
                     )
                     logger.info("✗ %s %s — 0 offers", route_label, dep_date)
+
+            if route_hits == 0 and not outer_done:
+                consecutive_empty_routes += 1
+            else:
+                consecutive_empty_routes = 0
 
         if first_hit_offer is not None:
             logger.info("Running verify_price on first offer of first hit...")

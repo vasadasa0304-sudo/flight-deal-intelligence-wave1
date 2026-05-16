@@ -9,7 +9,6 @@ Run with:
 
 from __future__ import annotations
 
-import asyncio
 import json
 from datetime import date
 from pathlib import Path
@@ -330,3 +329,36 @@ async def test_timeout_returns_empty_list_without_raising() -> None:
     assert call_count == 3, f"Expected 3 timeout attempts, got {call_count}"
     # Crucially: no exception escaped the client
     assert result == [], "Should return empty list on repeated timeout"
+
+
+@pytest.mark.asyncio
+async def test_log_request_uses_correct_column(monkeypatch: pytest.MonkeyPatch) -> None:
+    """_log_request must write requested_at, not created_at."""
+    monkeypatch.setenv("AMADEUS_ENV", "test")
+    captured = {}
+
+    async def fake_execute(stmt, params):
+        captured.update(params)
+
+    session = MagicMock()
+    session.execute = fake_execute
+    session.commit = AsyncMock()
+
+    class FakeSettings:
+        amadeus_env = "test"
+        amadeus_client_id = "x"
+        amadeus_client_secret = "y"
+        amadeus_timeout_seconds = 10
+        amadeus_max_concurrency = 1
+
+    client = AmadeusClient(FakeSettings(), db_session=session)
+    await client._log_request(
+        endpoint="/v2/shopping/flight-offers",
+        method="GET",
+        status_code=200,
+        duration_ms=42.0,
+        success=True,
+    )
+
+    assert "requested_at" in captured
+    assert "created_at" not in captured
