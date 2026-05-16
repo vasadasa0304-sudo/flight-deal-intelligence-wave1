@@ -4,25 +4,34 @@ from __future__ import annotations
 
 import logging
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy.orm import Session
 
+from src.clients.amadeus_client import AmadeusClient
 from src.config import Settings
-from src.ingestion.poller import poll_wave1_watchlist
+from src.db_helpers import get_engine
+from src.ingestion.poller import one_pass
 
 logger = logging.getLogger(__name__)
 
 
-def build_scheduler(settings: Settings) -> BackgroundScheduler:
-    """Build a scheduler with placeholder Wave1 jobs."""
+def build_scheduler(settings: Settings) -> AsyncIOScheduler:
+    """Build an async scheduler with Wave1 polling jobs."""
     settings.validate_wave1()
-    scheduler = BackgroundScheduler(timezone="UTC")
+    engine = get_engine(settings)
+    scheduler = AsyncIOScheduler(timezone="UTC")
+
+    async def _poll_pass() -> None:
+        with Session(engine) as session:
+            async with AmadeusClient(settings) as client:
+                await one_pass(session, client)
+
     scheduler.add_job(
-        poll_wave1_watchlist,
+        _poll_pass,
         "interval",
         minutes=30,
-        args=[settings],
         id="poll_wave1_watchlist",
         replace_existing=True,
     )
-    logger.info("Built Wave1 scheduler with placeholder polling job.")
+    logger.info("Built Wave1 async scheduler with polling job.")
     return scheduler
