@@ -8,6 +8,10 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
 from src.ingestion.parser import parse_offer_payload
 from src.utils.hashing import make_request_hash
 
@@ -43,6 +47,24 @@ def test_valid_response_parses_to_expected_dict(monkeypatch) -> None:
     assert parsed["polling_bucket_hour"] == datetime(2026, 5, 16, 10, tzinfo=UTC)
     assert parsed["observed_at"] == observed_at
     assert parsed["raw_response"] == payload
+
+
+def test_parser_uses_fx_rate_when_session_is_supplied(
+    monkeypatch,
+    pg_schema_engine: tuple[Engine, str],
+) -> None:
+    monkeypatch.setenv("DISPLAY_CURRENCY", "USD")
+    engine, _schema_name = pg_schema_engine
+    _clear_fx_rates(engine)
+    _insert_fx_rate(engine, date(2026, 5, 16), "CAD", "USD", Decimal("0.75000000"))
+
+    with Session(engine) as session:
+        parsed = parse_offer_payload(_fixture()["data"][0], _watch_row(), _observed_at(), session)
+
+    assert parsed is not None
+    assert parsed["display_currency"] == "USD"
+    assert parsed["display_price"] == Decimal("459.38")
+    assert parsed["fx_rate_used"] == Decimal("0.75000000")
 
 
 def test_missing_price_returns_none_without_exception() -> None:
@@ -138,3 +160,32 @@ def _different_value(key: str, value):
     if key == "booking_window_days":
         return 14
     raise AssertionError(f"Unhandled key: {key}")
+
+
+def _insert_fx_rate(
+    engine: Engine,
+    rate_date: date,
+    from_currency: str,
+    to_currency: str,
+    rate: Decimal,
+) -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                INSERT INTO fx_rates (rate_date, from_currency, to_currency, rate, source)
+                VALUES (:rate_date, :from_currency, :to_currency, :rate, 'FRANKFURTER')
+                """
+            ),
+            {
+                "rate_date": rate_date,
+                "from_currency": from_currency,
+                "to_currency": to_currency,
+                "rate": rate,
+            },
+        )
+
+
+def _clear_fx_rates(engine: Engine) -> None:
+    with engine.begin() as connection:
+        connection.exec_driver_sql("TRUNCATE TABLE fx_rates")

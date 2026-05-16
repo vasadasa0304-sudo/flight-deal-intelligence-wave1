@@ -9,6 +9,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from src.utils.currency import convert_amount
 from src.utils.hashing import make_request_hash
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ def parse_offer_payload(
     payload: dict[str, Any],
     watch_row: Any,
     observed_at: datetime,
+    session: Any | None = None,
 ) -> dict[str, Any] | None:
     """Parse one Amadeus offer, or select and parse one offer from a response.
 
@@ -54,16 +56,28 @@ def parse_offer_payload(
             display_price: Decimal = native_price
             fx_rate_used: Decimal | None = Decimal("1")
         else:
-            # FX not yet available (Prompt 9); store native values so the
-            # NOT NULL schema constraint is satisfied and the row is written.
-            logger.warning(
-                "No FX rate available for %s→%s; storing display_price=native_price.",
-                native_currency,
-                display_currency,
+            conversion = (
+                convert_amount(
+                    native_price,
+                    from_currency=native_currency,
+                    to_currency=display_currency,
+                    rate_date=observed_at_utc.date(),
+                    session=session,
+                )
+                if session is not None
+                else None
             )
-            display_price = native_price
-            display_currency = native_currency
-            fx_rate_used = None
+            if conversion is None:
+                logger.warning(
+                    "No FX rate available for %s→%s; storing display_price=native_price.",
+                    native_currency,
+                    display_currency,
+                )
+                display_price = native_price
+                display_currency = native_currency
+                fx_rate_used = None
+            else:
+                display_price, fx_rate_used = conversion
 
         request_hash = make_request_hash(
             provider=PROVIDER_AMADEUS,
