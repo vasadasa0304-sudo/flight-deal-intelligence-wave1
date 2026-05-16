@@ -1,23 +1,27 @@
-"""Live smoke test for AmadeusClient against the TEST sandbox.
+"""Live smoke test for AmadeusClient — multi-route/date probe matrix.
+
+Probes a matrix of (route, departure_date) combinations against the
+Amadeus TEST sandbox to discover which combinations actually return data.
+Stops as soon as the first hit is confirmed, then prints a summary.
 
 Run with real credentials exported as env vars (never written to disk):
 
-    AMADEUS_CLIENT_ID=xxx AMADEUS_CLIENT_SECRET=yyy \
+    AMADEUS_CLIENT_ID=xxx AMADEUS_CLIENT_SECRET=yyy \\
         .venv/bin/python scripts/smoke_amadeus.py
+
+Exit codes:
+    0  at least one combination returned offers
+    1  AMADEUS_CLIENT_ID or AMADEUS_CLIENT_SECRET not set
+    2  all probes returned 0 offers (sandbox may be down or credentials
+       are invalid for this environment)
 
 NOTE ON ROUTE CHOICE
 --------------------
 The Amadeus TEST sandbox does NOT mirror production coverage.
-Many Wave1 hub routes (e.g. IST->DXB, DXB->CAI) return HTTP 500
-in TEST — this is a sandbox data gap, not a client bug.
-
-Routes reliably covered in the Amadeus TEST sandbox:
-  MAD -> BCN  (high-frequency short-haul, always seeded)
-  LHR -> CDG  (high-frequency, always seeded)
-  JFK -> LAX  (high-frequency, always seeded)
-
-For production validation of Wave1 routes (IST, DXB, etc.) you must
-switch AMADEUS_ENV=production with production credentials.
+Many Wave1 hub routes (e.g. IST→DXB) return HTTP 500 in TEST because
+the sandbox has no data for them — this is not a client bug.  This script
+probes a range of routes and dates to find what the sandbox actually serves.
+For Wave1 hub routes use production credentials with AMADEUS_ENV=production.
 """
 
 from __future__ import annotations
@@ -25,23 +29,58 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+from dataclasses import dataclass
 from datetime import date, timedelta
 
-from src.config import load_settings
 from src.clients.amadeus_client import AmadeusClient
+from src.config import load_settings
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(levelname)s %(name)s — %(message)s",
+    format="%(levelname)-8s %(name)s — %(message)s",
 )
 logger = logging.getLogger("smoke_amadeus")
+logger.setLevel(logging.DEBUG)
 
-# Sandbox-reliable route — NOT a Wave1 hub pair, but proves the client works.
-# Switch to a Wave1 route only when AMADEUS_ENV=production.
-SMOKE_ORIGIN = "MAD"
-SMOKE_DESTINATION = "BCN"
-# Use a date ~60 days out so the sandbox has inventory
-SMOKE_DATE = date.today() + timedelta(days=60)
+# Routes probed in order.  Starts with historically seeded test-sandbox routes,
+# then adds Wave1-adjacent routes to catch any sandbox expansions.
+PROBE_ROUTES: list[tuple[str, str]] = [
+    ("MAD", "BCN"),
+    ("LHR", "CDG"),
+    ("JFK", "LHR"),
+    ("MAD", "JFK"),
+    ("DXB", "LHR"),
+    ("IST", "LHR"),
+]
+
+# Departure date offsets (days from today) tried for each route.
+DATE_OFFSETS: list[int] = [14, 30, 60, 90]
+
+
+@dataclass
+class _ProbeResult:
+    origin: str
+    destination: str
+    departure_date: date
+    offer_count: int
+    cheapest_price: str | None
+    cheapest_currency: str | None
+    carrier: str | None
+
+    @property
+    def route_label(self) -> str:
+        return f"{self.origin}→{self.destination}"
+
+
+def _extract_first_offer_info(
+    offer: dict,
+) -> tuple[str | None, str | None, str | None]:
+    """Return (grandTotal, currency, first_validating_carrier) from one offer."""
+    price = offer.get("price", {})
+    total = price.get("grandTotal") or price.get("total")
+    currency = price.get("currency")
+    carriers: list[str] = offer.get("validatingAirlineCodes", [])
+    return total, currency, (carriers[0] if carriers else None)
 
 
 async def main() -> int:
@@ -53,57 +92,126 @@ async def main() -> int:
         )
         return 1
 
+    today = date.today()
+    probe_dates = [today + timedelta(days=d) for d in DATE_OFFSETS]
     env_label = settings.amadeus_env.upper()
     logger.info(
-        "Connecting to Amadeus %s env — %s → %s on %s",
-        env_label, SMOKE_ORIGIN, SMOKE_DESTINATION, SMOKE_DATE,
+        "Amadeus %s env — probing %d routes × %d dates (%d combinations)",
+        env_label,
+        len(PROBE_ROUTES),
+        len(probe_dates),
+        len(PROBE_ROUTES) * len(probe_dates),
     )
 
-    async with AmadeusClient(settings) as client:
-        offers = await client.search_flight_offers(
-            origin=SMOKE_ORIGIN,
-            destination=SMOKE_DESTINATION,
-            departure_date=SMOKE_DATE,
-            cabin="ECONOMY",
-            adults=1,
-            max_offers=3,
-        )
+    results: list[_ProbeResult] = []
+    first_hit_offer: dict | None = None
 
-    if not offers:
+    async with AmadeusClient(settings) as client:
+        outer_done = False
+        for origin, destination in PROBE_ROUTES:
+            if outer_done:
+                break
+            for dep_date in probe_dates:
+                route_label = f"{origin}→{destination}"
+                logger.debug("Probing %s on %s...", route_label, dep_date)
+
+                offers = await client.search_flight_offers(
+                    origin=origin,
+                    destination=destination,
+                    departure_date=dep_date,
+                    cabin="ECONOMY",
+                    adults=1,
+                    max_offers=2,
+                )
+
+                if offers:
+                    total, currency, carrier = _extract_first_offer_info(offers[0])
+                    results.append(
+                        _ProbeResult(
+                            origin=origin,
+                            destination=destination,
+                            departure_date=dep_date,
+                            offer_count=len(offers),
+                            cheapest_price=total,
+                            cheapest_currency=currency,
+                            carrier=carrier,
+                        )
+                    )
+                    logger.info(
+                        "✓ %s %s — %d offer(s), cheapest %s %s (%s)",
+                        route_label,
+                        dep_date,
+                        len(offers),
+                        total or "?",
+                        currency or "?",
+                        carrier or "?",
+                    )
+                    first_hit_offer = offers[0]
+                    outer_done = True
+                    break
+                else:
+                    results.append(
+                        _ProbeResult(
+                            origin=origin,
+                            destination=destination,
+                            departure_date=dep_date,
+                            offer_count=0,
+                            cheapest_price=None,
+                            cheapest_currency=None,
+                            carrier=None,
+                        )
+                    )
+                    logger.info("✗ %s %s — 0 offers", route_label, dep_date)
+
+        if first_hit_offer is not None:
+            logger.info("Running verify_price on first offer of first hit...")
+            verified = await client.verify_price(first_hit_offer)
+            if verified is None:
+                logger.info(
+                    "verify_price → None  "
+                    "(expected in TEST env; /pricing is often unavailable in the sandbox)"
+                )
+            else:
+                logger.info("verify_price → dict ✓")
+
+    # --- Summary table ---
+    col_route = max((len(r.route_label) for r in results), default=9)
+    header = f"  {'Route':<{col_route}}  {'Date':<10}  Result  Offers"
+    bar = "  " + "-" * (len(header) - 2)
+
+    print()
+    print("  " + "=" * (len(header) - 2))
+    print(header)
+    print(bar)
+    for r in results:
+        if r.offer_count == 0:
+            symbol = "✗"
+            detail = "0 offers"
+        else:
+            price_str = (
+                f"{r.cheapest_price} {r.cheapest_currency}"
+                if r.cheapest_price
+                else "?"
+            )
+            detail = (
+                f"{r.offer_count} offer(s), cheapest {price_str} ({r.carrier or '?'})"
+            )
+            symbol = "✓"
+        print(
+            f"  {r.route_label:<{col_route}}  {str(r.departure_date):<10}  "
+            f"{symbol:<6}  {detail}"
+        )
+    print("  " + "=" * (len(header) - 2))
+    print()
+
+    if first_hit_offer is None:
         logger.error(
-            "Got 0 offers — check credentials and AMADEUS_ENV. "
-            "If env=test, the route %s->%s may not be seeded in the sandbox.",
-            SMOKE_ORIGIN, SMOKE_DESTINATION,
+            "All %d probe(s) returned 0 offers. "
+            "The sandbox may be down, or the credentials may be invalid for env=%s.",
+            len(results),
+            env_label,
         )
-        return 1
-
-    logger.info("Got %d offer(s) from %s env ✓", len(offers), env_label)
-    for i, offer in enumerate(offers, 1):
-        price = offer.get("price", {})
-        seg = offer["itineraries"][0]["segments"][0]
-        airlines = offer.get("validatingAirlineCodes", [])
-        logger.info(
-            "  Offer %d: %s  %s->%s  %s %s",
-            i,
-            "/".join(airlines),
-            seg["departure"]["iataCode"],
-            seg["arrival"]["iataCode"],
-            price.get("grandTotal", "?"),
-            price.get("currency", "?"),
-        )
-
-    # Also smoke verify_price on the first offer
-    logger.info("Testing verify_price on offer 1...")
-    async with AmadeusClient(settings) as client:
-        verified = await client.verify_price(offers[0])
-
-    if verified is None:
-        logger.warning(
-            "verify_price returned None — this is expected in TEST env "
-            "(the /pricing endpoint is often unavailable in the sandbox)."
-        )
-    else:
-        logger.info("verify_price returned a dict ✓")
+        return 2
 
     return 0
 
