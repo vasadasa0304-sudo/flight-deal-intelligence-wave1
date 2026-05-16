@@ -1,24 +1,27 @@
-"""Baseline health checks."""
+"""Baseline health classification for Wave1."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from decimal import Decimal
 
 
-@dataclass(frozen=True)
-class BaselineHealth:
-    """Health summary for one baseline grain."""
+def classify_health(
+    observation_count: int,
+    iqr_price_native: Decimal,
+    median_price_native: Decimal,
+) -> str:
+    """Return the baseline_health label for one baseline row.
 
-    route_key: str
-    observation_count: int
-    is_healthy: bool
-
-
-def assess_baseline_health(route_key: str, observation_count: int) -> BaselineHealth:
-    """Mark a baseline healthy once it has at least 30 observations."""
-    return BaselineHealth(
-        route_key=route_key,
-        observation_count=observation_count,
-        is_healthy=observation_count >= 30,
-    )
-
+    Priority order checked top-to-bottom:
+      1. MISSING       — count < 10; too few data points to be useful
+      2. OUTLIER_RISK  — count >= 10 and IQR > 50% of median; high dispersion
+      3. GOOD          — count >= 30; sufficient and stable
+      4. THIN          — 10 <= count < 30; usable but watch for revision
+    """
+    if observation_count < 10:
+        return "MISSING"
+    if median_price_native > 0 and iqr_price_native > Decimal("0.5") * median_price_native:
+        return "OUTLIER_RISK"
+    if observation_count >= 30:
+        return "GOOD"
+    return "THIN"
