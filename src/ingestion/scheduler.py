@@ -25,6 +25,7 @@ def build_scheduler(settings: Settings) -> AsyncIOScheduler:
         with Session(engine) as session:
             async with AmadeusClient(settings) as client:
                 await one_pass(session, client)
+            session.commit()
 
     scheduler.add_job(
         _poll_pass,
