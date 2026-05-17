@@ -364,6 +364,7 @@ class QaCheck(Base):
     verified_currency: Mapped[str | None] = mapped_column(String(3))
     result: Mapped[str] = mapped_column(Text, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
+    external_source_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="false")
     restrictions: Mapped[str | None] = mapped_column(Text)
     checked_by: Mapped[str | None] = mapped_column(Text)
 

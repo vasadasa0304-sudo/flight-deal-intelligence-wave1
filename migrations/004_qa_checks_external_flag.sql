@@ -1,0 +1,2 @@
+ALTER TABLE qa_checks
+    ADD COLUMN IF NOT EXISTS external_source_verified BOOLEAN NOT NULL DEFAULT FALSE;
