@@ -155,20 +155,33 @@ def _observations_collected(session: Session, since: datetime) -> int:
 
 
 def _anomalies_by_tier(session: Session, since: datetime, *, confirmed: bool) -> dict[str, int]:
-    status_clause = "AND status IN ('VERIFIED', 'EXPORTED')" if confirmed else ""
-    result = session.execute(
-        text(
-            f"""
-            SELECT tier, count(*) AS count
-            FROM detected_anomalies
-            WHERE detected_at >= :since
-            {status_clause}
-            GROUP BY tier
-            ORDER BY tier
-            """
-        ),
-        {"since": since},
-    )
+    if confirmed:
+        result = session.execute(
+            text(
+                """
+                SELECT tier, count(*) AS count
+                FROM detected_anomalies
+                WHERE detected_at >= :since
+                  AND status IN ('VERIFIED', 'EXPORTED')
+                GROUP BY tier
+                ORDER BY tier
+                """
+            ),
+            {"since": since},
+        )
+    else:
+        result = session.execute(
+            text(
+                """
+                SELECT tier, count(*) AS count
+                FROM detected_anomalies
+                WHERE detected_at >= :since
+                GROUP BY tier
+                ORDER BY tier
+                """
+            ),
+            {"since": since},
+        )
     return {
         str(row._mapping["tier"]): int(row._mapping["count"])
         for row in result

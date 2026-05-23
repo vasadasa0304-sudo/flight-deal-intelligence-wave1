@@ -63,6 +63,7 @@ def promote_to_alerts(session: Session) -> int:
                     :baseline_price, :absolute_saving, :percent_saving, :booking_link,
                     :valid_window, :urgency_flag, :verification_notes, :visibility, 'READY'
                 )
+                ON CONFLICT ON CONSTRAINT uq_alerts_anomaly_id DO NOTHING
                 """
             ),
             {

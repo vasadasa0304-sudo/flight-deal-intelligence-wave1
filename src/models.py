@@ -377,6 +377,7 @@ class QaCheck(Base):
 class Alert(Base):
     __tablename__ = "alerts"
     __table_args__ = (
+        UniqueConstraint("anomaly_id", name="uq_alerts_anomaly_id"),
         CheckConstraint("visibility in ('FREE', 'MEMBER')", name="ck_alerts_visibility"),
         CheckConstraint("status in ('READY', 'EXPORTED', 'EXPIRED')", name="ck_alerts_status"),
         Index("ix_alerts_status", "status"),

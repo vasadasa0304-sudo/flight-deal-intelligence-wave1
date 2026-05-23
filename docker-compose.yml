@@ -13,6 +13,7 @@ services:
       - ./migrations/002_grain_constraints.sql:/docker-entrypoint-initdb.d/002_grain_constraints.sql:ro
       - ./migrations/003_detector_dedup_constraint.sql:/docker-entrypoint-initdb.d/003_detector_dedup_constraint.sql:ro
       - ./migrations/004_qa_checks_external_flag.sql:/docker-entrypoint-initdb.d/004_qa_checks_external_flag.sql:ro
+      - ./migrations/005_alerts_dedup_constraint.sql:/docker-entrypoint-initdb.d/005_alerts_dedup_constraint.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d flight_deals"]
       interval: 10s
