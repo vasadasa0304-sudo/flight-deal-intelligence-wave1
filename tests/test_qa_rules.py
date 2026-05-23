@@ -246,7 +246,7 @@ def _insert_qa(
                 )
                 VALUES (
                     :anomaly_id, :source, :price,
-                    CASE WHEN :price IS NULL THEN NULL ELSE 'USD' END,
+                    :verified_currency,
                     'CONFIRMED', :notes, :external_source_verified, 'test'
                 )
                 """
@@ -255,6 +255,7 @@ def _insert_qa(
                 "anomaly_id": anomaly_id,
                 "source": source,
                 "price": price,
+                "verified_currency": "USD" if price is not None else None,
                 "notes": notes,
                 "external_source_verified": external_source_verified,
             },
