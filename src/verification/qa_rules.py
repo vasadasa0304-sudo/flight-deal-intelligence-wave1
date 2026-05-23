@@ -120,8 +120,7 @@ def _has_manual_external_override(anomaly_id: int, session: Session) -> bool:
                 QaCheck.anomaly_id == anomaly_id,
                 QaCheck.verification_source == "MANUAL",
                 QaCheck.result == "CONFIRMED",
-                QaCheck.notes.is_not(None),
-                QaCheck.notes != "",
+                QaCheck.external_source_verified.is_(True),
             )
         ).first()
         is not None

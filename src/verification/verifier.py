@@ -142,7 +142,6 @@ async def verify_anomaly(
             )
             if not phantom_verified:
                 qa.notes = "awaiting second strike or manual"
-                session.flush()
             anomaly.status = "VERIFIED" if phantom_verified else "DETECTED"
         else:
             qa = _add_qa_check(

@@ -93,6 +93,23 @@ def test_passes_phantom_two_source_rule_rejects_single_unconfirmed_strike(
         assert passes_phantom_two_source_rule(anomaly_id, session) is False
 
 
+def test_passes_phantom_two_source_rule_rejects_manual_confirmed_without_external_flag(
+    qa_rules_engine: Engine,
+) -> None:
+    anomaly_id = _insert_anomaly(qa_rules_engine)
+    _insert_qa(
+        qa_rules_engine,
+        anomaly_id,
+        source="MANUAL",
+        price=None,
+        notes="checking soon",
+        external_source_verified=False,
+    )
+
+    with Session(qa_rules_engine) as session:
+        assert passes_phantom_two_source_rule(anomaly_id, session) is False
+
+
 def _seed_reference_rows(engine: Engine) -> None:
     with engine.begin() as connection:
         connection.exec_driver_sql(
