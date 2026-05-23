@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import streamlit as st
+import sys
+from pathlib import Path
 
-from app.page_utils import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from page_utils import (
     apply_common_filters,
     cached_query,
     cached_query_params,

@@ -433,6 +433,31 @@ class ApiRequestLog(Base):
     requested_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
 
 
+class ProviderBudget(Base):
+    __tablename__ = "provider_budgets"
+    __table_args__ = (
+        CheckConstraint(
+            "daily_call_soft_limit >= 0 and daily_call_hard_limit > 0 "
+            "and daily_call_soft_limit <= daily_call_hard_limit",
+            name="ck_provider_budgets_daily_call_limits",
+        ),
+        CheckConstraint(
+            "(cost_soft_limit_usd is null or cost_hard_limit_usd is null "
+            "or cost_soft_limit_usd <= cost_hard_limit_usd) "
+            "and coalesce(cost_soft_limit_usd, 0) >= 0 "
+            "and coalesce(cost_hard_limit_usd, 0) >= 0",
+            name="ck_provider_budgets_cost_limits",
+        ),
+    )
+
+    provider: Mapped[str] = mapped_column(Text, primary_key=True)
+    daily_call_soft_limit: Mapped[int] = mapped_column(Integer, nullable=False)
+    daily_call_hard_limit: Mapped[int] = mapped_column(Integer, nullable=False)
+    cost_soft_limit_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    cost_hard_limit_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+
+
 class SchedulerRun(Base):
     __tablename__ = "scheduler_runs"
     __table_args__ = (

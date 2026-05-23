@@ -11,10 +11,19 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from src.clients.quota import (
+    QUOTA_HARD_LIMIT,
+    QUOTA_OK,
+    QUOTA_THROTTLE_95,
+    QUOTA_WARN_80,
+    quota_status,
+)
 from src.ingestion.observation_writer import insert_observation
 from src.ingestion.parser import parse_offer_payload
 
 logger = logging.getLogger(__name__)
+
+_WARNED_QUOTA_DATES: set[tuple[str, str]] = set()
 
 
 @dataclass(frozen=True)
@@ -27,6 +36,7 @@ class PollCounters:
     parse_errors: int
     requests_failed: int
     status: str
+    quota_skipped: int = 0
 
 
 def load_active_watch_rows(session: Session) -> list[dict[str, Any]]:
@@ -96,8 +106,32 @@ async def one_pass(
     duplicates = 0
     parse_errors = 0
     requests_failed = 0
+    attempted = 0
+    quota_skipped = 0
+    hard_limit_hit = False
 
     for row in rows:
+        current_quota_status = quota_status(session, "AMADEUS")
+        if current_quota_status == QUOTA_WARN_80:
+            _log_quota_warning_once("AMADEUS", started_at)
+        elif current_quota_status == QUOTA_THROTTLE_95 and row["route_priority"] == "STANDARD":
+            quota_skipped += 1
+            logger.warning(
+                "Skipping STANDARD watch_id=%s route_id=%s due to AMADEUS quota status %s.",
+                row["watch_id"],
+                row["route_id"],
+                current_quota_status,
+            )
+            continue
+        elif current_quota_status == QUOTA_HARD_LIMIT:
+            quota_skipped += 1
+            hard_limit_hit = True
+            logger.warning("Skipping poll pass due to AMADEUS quota hard limit.")
+            break
+        elif current_quota_status != QUOTA_OK:
+            logger.warning("Unknown quota status %s; proceeding.", current_quota_status)
+
+        attempted += 1
         logger.debug(
             "Polling watch_id=%s route_id=%s airline=%s cabin=%s window=%s",
             row["watch_id"],
@@ -163,8 +197,10 @@ async def one_pass(
                 exc,
             )
 
-    attempted = len(rows)
-    status = _run_status(attempted=attempted, requests_failed=requests_failed)
+    status = "PARTIAL" if hard_limit_hit else _run_status(
+        attempted=attempted,
+        requests_failed=requests_failed,
+    )
     finished_at = datetime.now(UTC)
     _write_scheduler_run(
         session,
@@ -174,7 +210,12 @@ async def one_pass(
         observations_inserted=inserted,
         requests_failed=requests_failed,
         status=status,
-        notes=f"duplicates={duplicates}; parse_errors={parse_errors}",
+        notes=_scheduler_notes(
+            duplicates=duplicates,
+            parse_errors=parse_errors,
+            quota_skipped=quota_skipped,
+            hard_limit_hit=hard_limit_hit,
+        ),
     )
     session.flush()
 
@@ -195,6 +236,7 @@ async def one_pass(
         parse_errors=parse_errors,
         requests_failed=requests_failed,
         status=status,
+        quota_skipped=quota_skipped,
     )
 
 
@@ -209,6 +251,27 @@ async def poll_one_watch_row(
         logger.warning("watch_id=%s is inactive or missing; skipping.", watch_id)
         return PollCounters(0, 0, 0, 0, 0, "SUCCESS")
     return await one_pass(session, amadeus_client, watch_rows=[row])
+
+
+def _log_quota_warning_once(provider: str, now: datetime) -> None:
+    key = (provider, now.date().isoformat())
+    if key in _WARNED_QUOTA_DATES:
+        return
+    _WARNED_QUOTA_DATES.add(key)
+    logger.warning("%s quota status is WARN_80; polling will continue.", provider)
+
+
+def _scheduler_notes(
+    *,
+    duplicates: int,
+    parse_errors: int,
+    quota_skipped: int,
+    hard_limit_hit: bool,
+) -> str:
+    notes = f"duplicates={duplicates}; parse_errors={parse_errors}; quota_skipped={quota_skipped}"
+    if hard_limit_hit:
+        return f"{notes}; quota hard limit hit"
+    return notes
 
 
 def _run_status(*, attempted: int, requests_failed: int) -> str:

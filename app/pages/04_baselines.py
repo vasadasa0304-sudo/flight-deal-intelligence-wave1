@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import pandas as pd
 import streamlit as st
+import sys
+from pathlib import Path
 
-from app.page_utils import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from page_utils import (
     apply_common_filters,
     cached_query,
     configure_page,

@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
+from pathlib import Path
+import sys
 from typing import Any
 
 import pandas as pd
 import streamlit as st
 from sqlalchemy import text
 
-from app.page_utils import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from page_utils import (
     apply_common_filters,
     cached_query,
     cached_query_params,

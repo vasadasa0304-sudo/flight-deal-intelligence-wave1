@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import streamlit as st
+import sys
+from pathlib import Path
 
-from app.page_utils import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from page_utils import (
     cached_query,
     configure_page,
     dataframe,
@@ -25,21 +28,28 @@ WITH today AS (
     SELECT date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' AS start_at
 )
 SELECT
-    provider,
+    arl.provider,
     count(*) AS calls_today,
     round(
-        100.0 * count(*) FILTER (WHERE success)
+        100.0 * count(*) FILTER (WHERE arl.success)
         / NULLIF(count(*), 0),
         2
     ) AS success_rate,
-    count(*) FILTER (WHERE status_code = 429) AS count_429,
-    COALESCE(sum(estimated_cost_usd), 0) AS estimated_cost,
-    'Pending Prompt 16' AS quota_remaining,
-    max(requested_at) AS last_refreshed
-FROM api_request_logs, today
-WHERE requested_at >= today.start_at
-GROUP BY provider
-ORDER BY provider
+    count(*) FILTER (WHERE arl.status_code = 429) AS count_429,
+    COALESCE(sum(arl.estimated_cost_usd), 0) AS estimated_cost,
+    pb.daily_call_hard_limit AS quota_hard_limit,
+    CASE
+        WHEN pb.daily_call_hard_limit IS NOT NULL
+        THEN GREATEST(0, pb.daily_call_hard_limit - count(*))
+        ELSE NULL
+    END AS quota_remaining,
+    max(arl.requested_at) AS last_refreshed
+FROM api_request_logs arl
+CROSS JOIN today
+LEFT JOIN provider_budgets pb ON pb.provider = arl.provider
+WHERE arl.requested_at >= today.start_at
+GROUP BY arl.provider, pb.daily_call_hard_limit
+ORDER BY arl.provider
 """
 
 df = cached_query(database_url(), SQL)
