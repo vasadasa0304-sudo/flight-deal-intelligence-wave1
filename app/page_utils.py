@@ -39,6 +39,17 @@ def cached_query(database_url_value: str, sql: str) -> pd.DataFrame:
         engine.dispose()
 
 
+@st.cache_data(ttl=READ_TTL_SECONDS, show_spinner=False)
+def cached_query_params(database_url_value: str, sql: str, **params: Any) -> pd.DataFrame:
+    """Run a cached parameterised read-only query and return a DataFrame."""
+    engine = get_engine(load_settings())
+    try:
+        with Session(engine) as session:
+            return pd.read_sql_query(text(sql), session.connection(), params=params)
+    finally:
+        engine.dispose()
+
+
 @contextmanager
 def write_session() -> Iterator[Session]:
     """Open one transactional SQLAlchemy session for a Streamlit write action."""

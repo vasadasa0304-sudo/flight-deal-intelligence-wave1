@@ -12,6 +12,7 @@ from sqlalchemy import text
 from app.page_utils import (
     apply_common_filters,
     cached_query,
+    cached_query_params,
     configure_page,
     dataframe,
     database_url,
@@ -58,7 +59,7 @@ ORDER BY da.detected_at ASC, da.id ASC
 HISTORY_SQL = """
 SELECT observed_at, native_price
 FROM price_observations
-WHERE watch_id = {watch_id}
+WHERE watch_id = :watch_id
   AND observed_at >= now() - INTERVAL '30 days'
 ORDER BY observed_at ASC
 """
@@ -72,7 +73,7 @@ SELECT
     notes,
     checked_at
 FROM qa_checks
-WHERE anomaly_id = {anomaly_id}
+WHERE anomaly_id = :anomaly_id
 ORDER BY checked_at DESC, id DESC
 """
 
@@ -94,6 +95,7 @@ def _write_manual_qa(
     verified_currency: str | None,
     notes: str | None,
     restrictions: str | None,
+    external_source_verified: bool,
 ) -> str:
     anomaly_id = int(anomaly["id"])
     with write_session() as session:
@@ -119,7 +121,7 @@ def _write_manual_qa(
                 "result": outcome,
                 "notes": notes,
                 "restrictions": restrictions,
-                "external_source_verified": bool(notes),
+                "external_source_verified": external_source_verified,
             },
         )
 
@@ -169,7 +171,7 @@ else:
     summary_cols[3].metric("Status", selected["status"])
     st.caption(str(selected.get("detection_reason") or ""))
 
-    history_df = cached_query(database_url(), HISTORY_SQL.format(watch_id=int(selected["watch_id"])))
+    history_df = cached_query_params(database_url(), HISTORY_SQL, watch_id=int(selected["watch_id"]))
     st.subheader("30-Day Native Price History")
     if history_df.empty:
         st.info("No recent price history for this watch row yet.")
@@ -178,7 +180,7 @@ else:
         chart_df["observed_at"] = pd.to_datetime(chart_df["observed_at"], utc=True)
         st.line_chart(chart_df.set_index("observed_at")["native_price"])
 
-    qa_state = cached_query(database_url(), QA_STATE_SQL.format(anomaly_id=int(selected_id)))
+    qa_state = cached_query_params(database_url(), QA_STATE_SQL, anomaly_id=int(selected_id))
     if selected["tier"] == "PHANTOM_FARE":
         st.subheader("Phantom Fare Verification State")
         with write_session() as session:
@@ -196,6 +198,10 @@ else:
         verified_currency = st.text_input("Verified currency", value=str(selected["currency"]))
         notes = st.text_area("Notes")
         restrictions = st.text_area("Restrictions")
+        external_source_verified = st.checkbox(
+            "External source verified",
+            help="Tick only if you confirmed this fare via an external channel (airline site, GDS, etc). Required to satisfy the Phantom Fare manual override path.",
+        )
         submitted = st.form_submit_button("Submit QA result")
 
     if submitted:
@@ -208,6 +214,7 @@ else:
                 verified_currency=verified_currency.strip().upper() or None,
                 notes=notes.strip() or None,
                 restrictions=restrictions.strip() or None,
+                external_source_verified=external_source_verified,
             )
         except ValueError as exc:
             st.error(str(exc))

@@ -7,6 +7,7 @@ import streamlit as st
 from app.page_utils import (
     apply_common_filters,
     cached_query,
+    cached_query_params,
     configure_page,
     dataframe,
     database_url,
@@ -51,11 +52,11 @@ LIMIT 500
 DETAIL_SQL = """
 SELECT 'observation' AS record_type, row_to_json(po)::jsonb AS payload
 FROM price_observations po
-WHERE po.id = {observation_id}
+WHERE po.id = :observation_id
 UNION ALL
 SELECT 'baseline' AS record_type, row_to_json(b)::jsonb AS payload
 FROM baselines b
-WHERE b.id = {baseline_id}
+WHERE b.id = :baseline_id
 """
 
 df = cached_query(database_url(), ANOMALIES_SQL)
@@ -80,12 +81,11 @@ else:
         format_func=lambda value: f"Anomaly {value}",
     )
     selected = filtered[filtered["id"] == selected_id].iloc[0]
-    detail_df = cached_query(
+    detail_df = cached_query_params(
         database_url(),
-        DETAIL_SQL.format(
-            observation_id=int(selected["price_observation_id"]),
-            baseline_id=int(selected["baseline_id"]),
-        ),
+        DETAIL_SQL,
+        observation_id=int(selected["price_observation_id"]),
+        baseline_id=int(selected["baseline_id"]),
     )
     for _, row in detail_df.iterrows():
         with st.expander(str(row["record_type"]).title(), expanded=True):
