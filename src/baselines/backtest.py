@@ -735,8 +735,6 @@ def _build_synthetic_metrics(
     real_obs: list[dict[str, Any]],
 ) -> pd.DataFrame:
     """Compute per-tier precision/recall and real-observation rejection rate."""
-    synthetic_id_to_tier = {o["id"]: o["injected_tier"] for o in synthetic_obs}
-
     syn_det_ids = {
         r[0]
         for r in session.execute(

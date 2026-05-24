@@ -1,4 +1,4 @@
-.PHONY: install test lint typecheck \
+.PHONY: install install-hooks test lint typecheck \
         db-up db-down db-reset migrate \
         seed-wave1 fx-refresh \
         scheduler-once scheduler detect verify export-alerts summary \
@@ -13,6 +13,13 @@ _PSQL_URL    := $(subst +psycopg,,$(DATABASE_URL))
 
 install:
 	python -m pip install -e ".[dev]"
+	$(MAKE) install-hooks
+
+# Install the version-controlled git hooks (pre-push lint gate).
+install-hooks:
+	cp scripts/hooks/pre-push .git/hooks/pre-push
+	chmod +x .git/hooks/pre-push
+	@echo "Installed pre-push lint hook."
 
 test:
 	python -m pytest -q

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Pre-push gate: run the same lint check CI runs, so lint failures are caught
+# before a push leaves this machine. Mirrors the "Lint" step in .github/workflows/ci.yml.
+#
+# Install with:  make install-hooks
+# Bypass once (not recommended):  git push --no-verify
+set -euo pipefail
+
+echo "pre-push: running ruff lint (matches CI)…"
+if ! python -m ruff check src/ app/ scripts/ tests/; then
+    echo ""
+    echo "pre-push: ruff found lint errors — push aborted."
+    echo "Fix them (or 'python -m ruff check --fix ...'), then push again."
+    exit 1
+fi
+echo "pre-push: lint clean."
