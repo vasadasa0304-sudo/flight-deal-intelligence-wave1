@@ -2,9 +2,17 @@
 
 from __future__ import annotations
 
+import os
+
 import streamlit as st
 
 from src.config import load_settings
+
+# Inject Streamlit Cloud secrets into os.environ so load_settings() picks them up.
+# When running locally, st.secrets is empty and this loop is a no-op.
+for _k, _v in st.secrets.items():
+    if isinstance(_v, str):
+        os.environ.setdefault(_k, _v)
 
 
 def main() -> None:

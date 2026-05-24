@@ -11,6 +11,7 @@ venv/
 *.pem
 *.key
 secrets/
+.streamlit/secrets.toml
 
 # Data outputs
 data/exports/*
