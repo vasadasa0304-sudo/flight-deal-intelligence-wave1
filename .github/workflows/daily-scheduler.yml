@@ -1,0 +1,62 @@
+name: Daily Fare Scheduler
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 06:00 UTC daily
+  workflow_dispatch:        # manual trigger button in GitHub UI
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Poll fares
+        run: python scripts/run_scheduler.py --once
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AMADEUS_ENV: production
+          AMADEUS_CLIENT_ID: ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET: ${{ secrets.AMADEUS_CLIENT_SECRET }}
+          DUFFEL_API_KEY: ${{ secrets.DUFFEL_API_KEY }}
+
+      - name: Refresh FX rates
+        run: python scripts/refresh_fx.py --backfill 1
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run anomaly detector
+        run: python scripts/run_detector.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Verify anomalies
+        run: python scripts/run_verifier.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AMADEUS_ENV: production
+          AMADEUS_CLIENT_ID: ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET: ${{ secrets.AMADEUS_CLIENT_SECRET }}
+          DUFFEL_API_KEY: ${{ secrets.DUFFEL_API_KEY }}
+
+      - name: Send email alerts
+        run: python scripts/send_email_alerts.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+
+      - name: Export alerts CSV
+        run: python scripts/export_alerts.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
