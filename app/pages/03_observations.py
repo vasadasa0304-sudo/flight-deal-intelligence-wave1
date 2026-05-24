@@ -41,8 +41,7 @@ SELECT
     source,
     polling_bucket_hour,
     observed_at,
-    created_at,
-    raw_response
+    created_at
 FROM price_observations
 ORDER BY observed_at DESC, id DESC
 LIMIT 500
@@ -58,13 +57,4 @@ if df.empty:
     )
 else:
     filtered = apply_common_filters(df, date_column="observed_at")
-    display_df = filtered.drop(columns=["raw_response"], errors="ignore")
-    dataframe(display_df)
-
-    st.subheader("Raw Offer Details")
-    for _, row in filtered.head(25).iterrows():
-        with st.expander(
-            f"Observation {row['id']} | {row['route_id']} {row['airline_code']} "
-            f"{row['cabin']} {row['booking_window_days']}d"
-        ):
-            st.json(row["raw_response"])
+    dataframe(filtered)
