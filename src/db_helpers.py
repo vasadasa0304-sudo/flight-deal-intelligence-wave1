@@ -15,7 +15,11 @@ from src.config import Settings
 
 def get_engine(settings: Settings) -> Engine:
     """Create a SQLAlchemy engine from application settings."""
-    return create_engine(settings.database_url, pool_pre_ping=True)
+    return create_engine(
+        settings.database_url,
+        pool_pre_ping=True,
+        connect_args={"prepare_threshold": 0},
+    )
 
 
 def run_migrations(engine: Engine, sql_path: Path) -> None:
