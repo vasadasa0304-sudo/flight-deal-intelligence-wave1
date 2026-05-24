@@ -110,7 +110,7 @@ async def one_pass(
     quota_skipped = 0
     hard_limit_hit = False
 
-    for row in rows:
+    for row_index, row in enumerate(rows):
         current_quota_status = quota_status(session, "AMADEUS")
         if current_quota_status == QUOTA_WARN_80:
             _log_quota_warning_once("AMADEUS", started_at)
@@ -124,7 +124,7 @@ async def one_pass(
             )
             continue
         elif current_quota_status == QUOTA_HARD_LIMIT:
-            quota_skipped += 1
+            quota_skipped += len(rows) - row_index
             hard_limit_hit = True
             logger.warning("Skipping poll pass due to AMADEUS quota hard limit.")
             break
@@ -149,6 +149,7 @@ async def one_pass(
                 destination=row["destination"],
                 departure_date=departure_date,
                 cabin=row["cabin"],
+                currency_code="USD",
                 max_offers=10,
             )
             if not offers:

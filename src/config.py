@@ -5,6 +5,10 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from dotenv import load_dotenv
+
+load_dotenv()  # loads .env from cwd or any parent directory; no-op if not found
+
 
 WAVE1_HUBS = ("IST", "SAW", "DXB", "AUH", "RUH", "JED", "DOH", "CAI")
 WAVE1_AIRLINES = ("TK", "PC", "EK", "FZ", "QR", "EY", "SV", "XY", "MS", "G9")
