@@ -34,6 +34,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: Build baselines
+        run: python scripts/build_baselines.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Run anomaly detector
         run: python scripts/run_detector.py
         env:
