@@ -19,9 +19,9 @@ class Threshold:
 
 
 SOW_THRESHOLDS = (
-    Threshold("PHANTOM_FARE", Decimal("75"), Decimal("250")),
-    Threshold("FLASH_DEAL", Decimal("60"), Decimal("150")),
-    Threshold("DEAL", Decimal("40"), Decimal("80")),
+    Threshold("PHANTOM_FARE", Decimal("35"), Decimal("120")),
+    Threshold("FLASH_DEAL", Decimal("18"), Decimal("55")),
+    Threshold("DEAL", Decimal("8"), Decimal("25")),
 )
 
 LCC_EXPERIMENTAL_THRESHOLDS = (
