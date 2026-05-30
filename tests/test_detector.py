@@ -27,13 +27,14 @@ def detector_engine(pg_schema_engine: tuple[Engine, str]) -> Iterator[Engine]:
         _clear_rows(engine)
 
 
-def test_399_percent_saving_on_200_eur_baseline_does_not_classify(
+def test_saving_below_deal_threshold_does_not_classify(
     detector_engine: Engine,
 ) -> None:
+    # 7% saving, $14 absolute — both below DEAL thresholds (8% + $25)
     observed_at = _insert_pair(
         detector_engine,
         baseline_price=Decimal("200.00"),
-        current_price=Decimal("120.20"),
+        current_price=Decimal("186.00"),
         currency="EUR",
     )
 
@@ -42,13 +43,14 @@ def test_399_percent_saving_on_200_eur_baseline_does_not_classify(
     assert _anomalies(detector_engine) == []
 
 
-def test_40_percent_saving_below_absolute_threshold_does_not_classify(
+def test_saving_above_percent_but_below_absolute_threshold_does_not_classify(
     detector_engine: Engine,
 ) -> None:
+    # 12% saving, $12 absolute — percent above DEAL threshold but absolute below $25
     observed_at = _insert_pair(
         detector_engine,
         baseline_price=Decimal("100.00"),
-        current_price=Decimal("60.00"),
+        current_price=Decimal("88.00"),
         currency="EUR",
     )
 
@@ -57,11 +59,12 @@ def test_40_percent_saving_below_absolute_threshold_does_not_classify(
     assert _anomalies(detector_engine) == []
 
 
-def test_40_percent_and_absolute_threshold_classifies_deal(detector_engine: Engine) -> None:
+def test_deal_classifies_at_ten_percent_with_absolute_saving(detector_engine: Engine) -> None:
+    # 10% saving, $30 absolute — above DEAL (8% + $25) but below FLASH_DEAL (18% + $55)
     observed_at = _insert_pair(
         detector_engine,
-        baseline_price=Decimal("200.00"),
-        current_price=Decimal("120.00"),
+        baseline_price=Decimal("300.00"),
+        current_price=Decimal("270.00"),
         currency="EUR",
     )
 
@@ -74,13 +77,14 @@ def test_40_percent_and_absolute_threshold_classifies_deal(detector_engine: Engi
     assert rows[0]["baseline_id"] is not None
 
 
-def test_60_percent_and_absolute_threshold_classifies_flash_deal(
+def test_flash_deal_classifies_at_twenty_percent_with_absolute_saving(
     detector_engine: Engine,
 ) -> None:
+    # 20% saving, $60 absolute — above FLASH_DEAL (18% + $55) but below PHANTOM_FARE (35% + $120)
     observed_at = _insert_pair(
         detector_engine,
         baseline_price=Decimal("300.00"),
-        current_price=Decimal("120.00"),
+        current_price=Decimal("240.00"),
         currency="EUR",
     )
 
@@ -91,9 +95,10 @@ def test_60_percent_and_absolute_threshold_classifies_flash_deal(
     assert rows[0]["tier"] == "FLASH_DEAL"
 
 
-def test_75_percent_and_absolute_threshold_classifies_phantom_fare(
+def test_phantom_fare_classifies_at_seventy_five_percent(
     detector_engine: Engine,
 ) -> None:
+    # 75% saving, $300 absolute — above PHANTOM_FARE (35% + $120)
     observed_at = _insert_pair(
         detector_engine,
         baseline_price=Decimal("400.00"),
@@ -125,10 +130,11 @@ def test_missing_baseline_health_does_not_classify(detector_engine: Engine) -> N
 def test_thin_baseline_classifies_with_confidence_below_one(
     detector_engine: Engine,
 ) -> None:
+    # 10% saving, $30 absolute — DEAL tier; THIN health gives confidence < 1.0
     observed_at = _insert_pair(
         detector_engine,
-        baseline_price=Decimal("200.00"),
-        current_price=Decimal("120.00"),
+        baseline_price=Decimal("300.00"),
+        current_price=Decimal("270.00"),
         currency="USD",
         baseline_health="THIN",
     )

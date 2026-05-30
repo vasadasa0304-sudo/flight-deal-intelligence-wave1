@@ -31,11 +31,11 @@ _START = date(2026, 4, 1)
 _END = date(2026, 4, 30)
 
 # Baseline price used in all fixtures; high enough for all tier thresholds:
-#   DEAL:    45% off $400 = $220, saving $180 >= $80  ✓
-#   FLASH:   65% off $400 = $140, saving $260 >= $150 ✓
-#   PHANTOM: 80% off $400 = $80,  saving $320 >= $250 ✓
+#   DEAL:    10% off $400 = $360, saving $40 >= $25  ✓  (8% + $25)
+#   FLASH:   20% off $400 = $320, saving $80 >= $55  ✓  (18% + $55)
+#   PHANTOM: 40% off $400 = $240, saving $160 >= $120 ✓ (35% + $120)
 _BASELINE_PRICE = Decimal("400.00")
-_DEAL_PRICE = Decimal("220.00")
+_DEAL_PRICE = Decimal("360.00")
 _DEAL_DATE = date(2026, 4, 10)
 
 

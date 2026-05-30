@@ -34,9 +34,9 @@ jobs:
       AMADEUS_ENV: test
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5.3.0
         with:
           python-version: "3.12"
           cache: pip
